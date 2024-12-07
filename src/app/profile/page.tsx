@@ -21,7 +21,7 @@ function Profile() {
           <Row className="align-items-center profile-header mb-5 text-center text-md-left" data-testid="profile">
             <Col md={2}>
               <img
-                src={user.picture}
+                src={user.picture ?? ""}
                 alt="Profile"
                 className="rounded-circle img-fluid profile-picture mb-3 mb-md-0"
                 decode="async"

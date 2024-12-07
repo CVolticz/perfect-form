@@ -9,22 +9,19 @@ import { list } from '@vercel/blob'
  */
 interface VideoBlockProps {
     prefix: string;
-    fileName: string;
 }
 
 /**
  * Video Block Component
  * @returns 
  */
-export async function VideoComponent({ prefix, fileName }: VideoBlockProps) {
+export async function VideoComponent({ prefix }: VideoBlockProps) {
     const { blobs } = await list({
         prefix: prefix,
         limit: 1,
     })
     console.log(blobs)
-
-    let url = blobs[0]['url'] + `${fileName}`;
-
+    let url = blobs[0]['url']
     return (
         <video controls preload="none" aria-label="Video player">
             <source src={url} type="video/mp4" />
