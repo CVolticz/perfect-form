@@ -19,7 +19,7 @@ interface AchorLinkProps {
 const AnchorLink = ({ children, href, className, icon, tabIndex, testId }: AchorLinkProps) => {
   return (
     <a href={href}>
-      <NavBarItem href={href} className={className} icon={icon} tabIndex={tabIndex} testId={testId}>
+      <NavBarItem href={href} className={className??''} icon={icon} tabIndex={tabIndex} testId={testId??''}>
         {children}
       </NavBarItem>
     </a>
