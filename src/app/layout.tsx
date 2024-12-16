@@ -1,14 +1,13 @@
 'use client';
-
 // system level import
 import "./globals.css";
 
 // library level import
-import { Inter } from 'next/font/google'
+import { Inter } from 'next/font/google';
 
 // component level import
-import Provider from '../components/Provider'
-import Header from '../components/Header'
+import Provider from '@/app/components/Provider';
+import Header from '@/app/components/Header';
 
 const inter = Inter({ subsets: ['latin'] })
 

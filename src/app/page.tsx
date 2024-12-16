@@ -2,7 +2,7 @@
 import { Suspense } from 'react'
 
 // Component Level Import
-import { VideoComponent } from "../components/VideoComponent";
+import { VideoComponent } from "@/app/components/protected/VideoComponent";
 
 export default function Home() {
   return (

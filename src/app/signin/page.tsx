@@ -1,8 +1,8 @@
 'use client'; 
 
-import Button from '../../components/Button';
-import GoogleSignInButton from '../../components/GoogleSignInButton';
-import TextField from '../../components/TextField';
+import Button from '@/app/components/authentication/Button';
+import GoogleSignInButton from '@/app/components/authentication/GoogleSignInButton';
+import TextField from '@/app/components/protected/TextField';
 
 const SignInPage = () => {
   return (

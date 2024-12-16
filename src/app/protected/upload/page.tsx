@@ -1,42 +1,36 @@
-'use client';
- 
-import { type PutBlobResult } from '@vercel/blob';
-import { upload } from '@vercel/blob/client';
-import { useState, useRef } from 'react';
- 
-export default function AvatarUploadPage() {
-  const inputFileRef = useRef<HTMLInputElement>(null);
-  const [blob, setBlob] = useState<PutBlobResult | null>(null);
-  return (
-    <>
-      <h1>Upload Your Avatar</h1>
- 
-      <form
-        onSubmit={async (event) => {
-          event.preventDefault();
- 
-          if (!inputFileRef.current?.files) {
-            throw new Error('No file selected');
-          }
- 
-          const file = inputFileRef.current.files[0];
- 
-          const newBlob = await upload(file.name, file, {
-            access: 'public',
-            handleUploadUrl: '/api/upload',
-          });
- 
-          setBlob(newBlob);
-        }}
-      >
-        <input name="file" ref={inputFileRef} type="file" required />
-        <button type="submit">Upload</button>
-      </form>
-      {blob && (
-        <div>
-          Blob url: <a href={blob.url}>{blob.url}</a>
+/**
+ * Page Component to Handle User Upload Assignment
+ * TODO: Handle Serverside Render of Assignment Upload & Feedbacks
+ */
+// Library Level Import
+import { getServerSession } from 'next-auth';
+
+// API Level Import
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+
+// Components Level Import
+import AvatarUploadClient from '@/app/components/protected/AvatarUploadClient';
+
+export default async function AvatarUploadPage() {
+  const session = await getServerSession(authOptions);
+
+  // Handle user authorization
+  if (!session || (session.user.role !== 'user' && session.user.role !== 'admin')) {
+    return (
+      <section className="py-24">
+        <div className="container">
+          <h1 className="text-2xl font-bold">You are not authorized to access this page!</h1>
         </div>
-      )}
-    </>
+      </section>
+    );
+  }
+
+  return (
+    <section className="py-24">
+      <div className="container">
+        <h1 className="text-2xl font-bold mb-4">Upload Your Avatar</h1>
+        <AvatarUploadClient />
+      </div>
+    </section>
   );
 }

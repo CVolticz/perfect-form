@@ -1,4 +1,7 @@
 'use client'
+/**
+ * Google SignIn Button Component
+ */
 
 import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';

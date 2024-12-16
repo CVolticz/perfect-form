@@ -1,66 +1,35 @@
-'use client'
 /**
  * Page component to handle rendering lesson plan per student
+ * TODO: Build this out
  */
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+// Library Level Import
+import { getServerSession } from 'next-auth';
 
-/**
- * Lesson Plan Interface
- */
-interface LessonPlan {
-  title: string;
-  description: string;
-  activities: string[];
-}
+// API Level Import
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
-const Lesson: React.FC = () => {
-  const { data: session } = useSession();
-  const [lessonPlan, setLessonPlan] = useState<LessonPlan | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+import LessonPlan from '@/app/components/protected/LessonPlan'; // Client Component
 
-  useEffect(() => {
-    const fetchLessonPlan = async () => {
-      try {
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-        const response = await fetch(`/api/lesson-plan?date=${today}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch lesson plan');
-        }
-        const data: LessonPlan = await response.json();
-        setLessonPlan(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+export default async function LessonPage() {
+  const session = await getServerSession(authOptions);
 
-    fetchLessonPlan();
-  }, []);
-
-  if (loading) return <p>Loading today's lesson plan...</p>;
-  if (error) return <p>Error: {error}</p>;
+  // Check if the session exists and if the user has the correct role
+  if (!session || (session.user.role !== 'user' && session.user.role !== 'admin')) {
+    return (
+      <section className="py-24">
+        <div className="container">
+          <h1 className="text-2xl font-bold">You are not authorized to access this page!</h1>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Hello {session?.user?.name}! Here is Today's Lesson Plan</h1>
-      {lessonPlan ? (
-        <div>
-          <h2>{lessonPlan.title}</h2>
-          <p>{lessonPlan.description}</p>
-          <ul>
-            {lessonPlan.activities.map((activity, index) => (
-              <li key={index}>{activity}</li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <p>No lesson plan available for today.</p>
-      )}
-    </div>
+    <section className="py-24">
+      <div className="container">
+        <h1 className="text-2xl font-bold">Welcome {session.user.name}</h1>
+        <LessonPlan session={session} />
+      </div>
+    </section>
   );
-};
-
-export default Lesson;
+}

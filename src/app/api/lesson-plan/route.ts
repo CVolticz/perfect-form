@@ -7,12 +7,12 @@ interface LessonPlan {
 }
 
 const lessonPlans: Record<string, LessonPlan> = {
-  '2024-12-06': {
+  '2024-12-15': {
     title: 'Introduction to Algebra',
     description: 'Learn the basics of algebra including variables, equations, and functions.',
     activities: ['Watch Algebra Basics Video', 'Complete Worksheet 1', 'Join Q&A Session'],
   },
-  '2024-12-07': {
+  '2024-12-16': {
     title: 'Geometry Basics',
     description: 'Understanding points, lines, planes, and shapes.',
     activities: ['Read Chapter 2 of Math Book', 'Solve 10 geometry problems', 'Attend virtual class'],

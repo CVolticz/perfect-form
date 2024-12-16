@@ -1,5 +1,5 @@
-import Link from 'next/link'
-import SignInButton from './SignInButton'
+import Link from 'next/link';
+import SignInButton from '@/app/components/authentication/SignInButton';
 
 const Header = () => {
   return (
@@ -13,7 +13,7 @@ const Header = () => {
             <Link href='/protected/upload'> Server Upload </Link>
           </li>
           <li className='text-sm'>
-            <Link href='/protected/lession'> Lesson Plan </Link>
+            <Link href='/protected/lesson'> Lesson Plan </Link>
           </li>
           <li>
             <SignInButton />

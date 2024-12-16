@@ -1,6 +1,6 @@
 'use client';
 import { useState, FormEvent, ChangeEvent } from 'react';
-import CommentBlock from '../../../components/CommentBlock';
+import CommentBlock from '../../components/protected/CommentBlock';
 
 interface Comment {
   id: number;
