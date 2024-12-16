@@ -12,6 +12,7 @@ declare module 'next-auth' {
 
   interface Session {
     user: {
+      id?: string; // User ID added to session
       role?: string; // Role added to session
     } & DefaultSession["user"]; // Include default fields (e.g., name, email, image)
   }
@@ -63,6 +64,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       // Expose role in the session
       session.user.role = token.role as string | undefined;
+      session.user.id = token.sub
       return session;
     },
   },

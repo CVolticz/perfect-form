@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div>
       <Suspense fallback={<p>Loading video...</p>}>
-        <VideoComponent prefix="videos/file_example_MP4_480_1_5MG-0kSHLgTDZUL4aPpcfgGdVLV3AEZs1o.mp4" />
+        <VideoComponent prefix="sample-earth-eLz2X4dYzxXZpbRTC0XPzOsrIj2zx0.mp4" />
       </Suspense>
     </div>
   );

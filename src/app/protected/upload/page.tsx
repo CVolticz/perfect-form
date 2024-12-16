@@ -9,13 +9,13 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 // Components Level Import
-import AvatarUploadClient from '@/app/components/protected/AvatarUploadClient';
+import VideoUpload from '@/app/components/protected/VideoUpload';
 
 export default async function AvatarUploadPage() {
   const session = await getServerSession(authOptions);
 
   // Handle user authorization
-  if (!session || (session.user.role !== 'user' && session.user.role !== 'admin')) {
+  if (!session || (!session.user)) {
     return (
       <section className="py-24">
         <div className="container">
@@ -28,8 +28,9 @@ export default async function AvatarUploadPage() {
   return (
     <section className="py-24">
       <div className="container">
+        <h1> Hello {session.user.name}</h1>
         <h1 className="text-2xl font-bold mb-4">Upload Your Avatar</h1>
-        <AvatarUploadClient />
+        <VideoUpload />
       </div>
     </section>
   );
