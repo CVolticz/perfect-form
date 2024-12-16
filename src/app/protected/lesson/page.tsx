@@ -3,7 +3,7 @@
  * Page component to handle rendering lesson plan per student
  */
 import { useState, useEffect } from 'react';
-
+import { useSession } from 'next-auth/react';
 
 /**
  * Lesson Plan Interface
@@ -15,6 +15,7 @@ interface LessonPlan {
 }
 
 const Lesson: React.FC = () => {
+  const { data: session } = useSession();
   const [lessonPlan, setLessonPlan] = useState<LessonPlan | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +45,7 @@ const Lesson: React.FC = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Today's Lesson Plan</h1>
+      <h1>Hello {session?.user?.name}! Here is Today's Lesson Plan</h1>
       {lessonPlan ? (
         <div>
           <h2>{lessonPlan.title}</h2>

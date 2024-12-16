@@ -1,50 +1,22 @@
 'use client';
+import { getServerSession } from 'next-auth/next'
+import { redirect } from 'next/navigation'
+import { authOptions } from '../api/auth/[...nextauth]/route'
 
-import React from 'react';
-import { Row, Col } from 'reactstrap';
-import { useUser, withPageAuthRequired } from '@auth0/nextjs-auth0/client';
+const Page = async () => {
+  const session = await getServerSession(authOptions)
 
-import Loading from '../../components/Loading';
-import ErrorMessage from '../../components/ErrorMessage';
-import Highlight from '../../components/Highlight';
-
-function Profile() {
-  const { user, isLoading } = useUser();
-
-  console.log(user);
+  if (!session) {
+    redirect('/signin?callbackUrl=/profile')
+  }
 
   return (
-    <>
-      {isLoading && <Loading />}
-      {user && (
-        <>
-          <Row className="align-items-center profile-header mb-5 text-center text-md-left" data-testid="profile">
-            <Col md={2}>
-              <img
-                src={user.picture ?? ""}
-                alt="Profile"
-                className="rounded-circle img-fluid profile-picture mb-3 mb-md-0"
-                decode="async"
-                data-testid="profile-picture"
-              />
-            </Col>
-            <Col md>
-              <h2 data-testid="profile-name">{user.name}</h2>
-              <p className="lead text-muted" data-testid="profile-email">
-                {user.email}
-              </p>
-            </Col>
-          </Row>
-          <Row data-testid="profile-json">
-            <Highlight>{JSON.stringify(user, null, 2)}</Highlight>
-          </Row>
-        </>
-      )}
-    </>
-  );
+    <section className='py-24'>
+      <div className='container'>
+        <h1 className='text-2xl font-bold'>Profile</h1>
+      </div>
+    </section>
+  )
 }
 
-export default withPageAuthRequired(Profile, {
-  onRedirecting: () => <Loading />,
-  onError: error => <ErrorMessage>{error.message}</ErrorMessage>
-});
+export default Page

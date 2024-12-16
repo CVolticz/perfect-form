@@ -20,8 +20,7 @@ export async function VideoComponent({ prefix }: VideoBlockProps) {
         prefix: prefix,
         limit: 1,
     })
-    console.log(blobs)
-    let url = blobs[0]['url']
+    let url = blobs[0]['url'];
     return (
         <video controls preload="none" aria-label="Video player">
             <source src={url} type="video/mp4" />
