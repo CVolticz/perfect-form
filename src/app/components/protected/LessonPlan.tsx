@@ -1,4 +1,5 @@
 // components/LessonClient.tsx (Client Component)
+// TODOs: Actually make this better!
 'use client';
 
 import { useState, useEffect } from 'react';

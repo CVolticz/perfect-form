@@ -1,4 +1,5 @@
 "use client";
+
 /**
  * User Dashboard Component
  * Users can upload videos for trainers to view and comment on.
@@ -6,16 +7,39 @@
  */
 
 // System Level Import
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+
+// Component Level Import
+// import { VideoComponent } from "@/app/components/protected/VideoComponent"; // Adjust if needed
+
+// Define the shape of video data
+interface Video {
+  id: number;
+  title: string;
+  videoUrl: string;
+  comments: string[];
+}
 
 export default function Dashboard() {
-  const [videos, setVideos] = useState([
-    { id: 1, url: "/sample-video1.mp4", comments: ["Great video!", "This was super helpful."] },
-    { id: 2, url: "/sample-video2.mp4", comments: ["Amazing explanation!", "Very clear and concise."] }
-  ]);
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [newComment, setNewComment] = useState<string>("");
+  const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
 
-  const [newComment, setNewComment] = useState("");
-  const [activeVideoId, setActiveVideoId] = useState(videos[0]?.id || null);
+  // Fetch videos from API
+  useEffect(() => {
+    async function fetchVideos() {
+      try {
+        const response = await fetch('/api/videos'); // Fetch from your API
+        const data: Video[] = await response.json(); // Type the response as Video[]
+        setVideos(data);
+        setActiveVideoId(data[0]?.id || null); // Set the first video as active by default
+      } catch (error) {
+        console.error('Error fetching videos:', error);
+      }
+    }
+
+    fetchVideos();
+  }, []);
 
   const handleAddComment = () => {
     if (newComment.trim() !== "" && activeVideoId !== null) {
@@ -26,14 +50,18 @@ export default function Dashboard() {
             : video
         )
       );
-      setNewComment("");
+      setNewComment(""); // Clear comment input after submission
     }
   };
+
+  // Force Next to render the current active video  
+  const activeVideo = videos.find((video) => video.id === activeVideoId);
+
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: 'Arial, sans-serif' }}>
       {/* Left Side: Videos List */}
-      <div style={{ flex: 1, backgroundColor: '#f4f4f4', padding: '10px', overflowY: 'auto' }}>
+      <div style={{ flex: 1, backgroundColor: '#f4f4f4', padding: '20px', overflowY: 'auto', borderRight: '1px solid #ddd' }}>
         <h2>Videos</h2>
         <div>
           {videos.map((video) => (
@@ -45,26 +73,26 @@ export default function Dashboard() {
                 border: activeVideoId === video.id ? '2px solid #0070f3' : '1px solid #ddd',
                 borderRadius: '5px',
                 cursor: 'pointer',
+                transition: 'background-color 0.3s ease',
+                backgroundColor: activeVideoId === video.id ? '#e0f7fa' : 'transparent',
               }}
               onClick={() => setActiveVideoId(video.id)}
             >
-              Video {video.id}
+              {video.title}
             </div>
           ))}
         </div>
       </div>
 
       {/* Middle: Active Video */}
-      <div style={{ flex: 2, backgroundColor: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        {activeVideoId && (
-          <video controls style={{ width: '90%', height: 'auto' }}>
-            <source
-              src={videos.find((video) => video.id === activeVideoId)?.url}
-              type="video/mp4"
-            />
-            Your browser does not support the video tag.
-          </video>
-        )}
+      <div style={{ flex: 2, backgroundColor: "#000", display: "flex", justifyContent: "center", alignItems: "center", padding: "10px" }}>
+        <Suspense fallback={<p>Loading video...</p>}>
+          {activeVideo ? (
+            <VideoComponent key={activeVideo.videoUrl} videoUrl={activeVideo.videoUrl} />
+          ) : (
+            <p style={{ color: "#fff" }}>Select a video to play</p>
+          )}
+        </Suspense>
       </div>
 
       {/* Right Side: Comments */}
@@ -79,6 +107,7 @@ export default function Dashboard() {
                 padding: '10px',
                 border: '1px solid #ddd',
                 borderRadius: '5px',
+                backgroundColor: '#f9f9f9',
               }}
             >
               {comment}
@@ -108,12 +137,29 @@ export default function Dashboard() {
               border: 'none',
               borderRadius: '5px',
               cursor: 'pointer',
+              transition: 'background-color 0.3s ease',
             }}
           >
             Submit
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Video component that takes video URL as a prop
+interface VideoComponentProps {
+  videoUrl: string;
+}
+
+function VideoComponent({ videoUrl }: VideoComponentProps) {
+  return (
+    <div style={{ maxWidth: '800px', width: '100%' }}>
+      <video controls width="100%" preload="auto">
+        <source src={videoUrl} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
     </div>
   );
 }

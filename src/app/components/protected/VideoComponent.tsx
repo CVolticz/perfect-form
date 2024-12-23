@@ -19,12 +19,17 @@ export async function VideoComponent({ prefix }: VideoBlockProps) {
     const { blobs } = await list({
         prefix: prefix,
         limit: 1,
+        token: process.env.BLOB_READ_WRITE_TOKEN
     })
-    let url = blobs[0]['url'];
+    const url = blobs[0]?.url || '';
+    console.log(url);
     return (
-        <video controls preload="none" aria-label="Video player">
+        <video controls 
+            style={{ width: '90%', height: 'auto' }} preload="none" aria-label="Video player">
             <source src={url} type="video/mp4" />
             Your browser does not support the video tag.
         </video>
     )
 }
+
+
