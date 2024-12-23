@@ -1,3 +1,7 @@
+/**
+ * User Profile Page
+ * Enable User to change their username and other pertinent imformation
+ */
 import UserProfileForm from '@/app/components/protected/UserProfileForm';
 
 const Page = async () => {
