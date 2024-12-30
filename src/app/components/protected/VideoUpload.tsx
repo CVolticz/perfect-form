@@ -27,7 +27,7 @@ const VideoUpload = () => {
     setUploading(true);
 
     try {
-      const response = await fetch('/api/upload', {
+      const response = await fetch('/api/videos', {
         method: 'POST',
         body: formData,
       });

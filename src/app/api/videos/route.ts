@@ -20,6 +20,7 @@ interface Video {
 // Azure Blob Storage Configuration
 const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
 const AZURE_CONTAINER_NAME = process.env.AZURE_CONTAINER_NAME;
+const AZURE_STORAGE_ACCOUNT_NAME = process.env.AZURE_STORAGE_ACCOUNT_NAME;
 
 if (!AZURE_STORAGE_CONNECTION_STRING || !AZURE_CONTAINER_NAME) {
   throw new Error('Azure Storage connection string or container name is not set in environment variables.');
@@ -83,30 +84,55 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Missing file or userId' }, { status: 400 });
     }
 
-    // Generate a unique filename for the uploaded video
-    const filename = `videos/${Date.now()}-${file.name}`;
+    // Convert the file stream to ArrayBuffer
+    const filename = `videos/${file.name}`;
+    const arrayBuffer = await streamToArrayBuffer(file.stream());
 
     // Upload the file to Azure Blob Storage
     const blockBlobClient = containerClient.getBlockBlobClient(filename);
-    await blockBlobClient.uploadData(file.stream(), {
+    await blockBlobClient.uploadData(arrayBuffer, {
       blobHTTPHeaders: {
         blobContentType: file.type,
       },
     });
 
-    const videoUrl = blockBlobClient.url;
-
     // Store the video metadata in PostgreSQL
+    const videoUrl = blockBlobClient.url;
     const videoMetadata = await saveVideoMetadataToDb({
       userId: userId,
       videoPath: filename,
-      videoUrl: videoUrl, // Store the URL of the uploaded video
+      videoUrl: videoUrl,
     });
 
-    // Return the URL of the uploaded video
     return NextResponse.json({ videoUrl, videoMetadata });
   } catch (error: any) {
     console.error('Error uploading video:', error);
     return NextResponse.json({ error: 'Failed to upload video' }, { status: 500 });
   }
+}
+
+
+async function streamToArrayBuffer(stream: ReadableStream): Promise<ArrayBuffer> {
+  const reader = stream.getReader();
+  const chunks = [];
+  let done = false;
+
+  while (!done) {
+    const { value, done: streamDone } = await reader.read();
+    if (value) {
+      chunks.push(value);
+    }
+    done = streamDone;
+  }
+
+  const totalLength = chunks.reduce((acc, chunk) => acc + chunk.byteLength, 0);
+  const arrayBuffer = new Uint8Array(totalLength);
+  let offset = 0;
+
+  for (const chunk of chunks) {
+    arrayBuffer.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  return arrayBuffer.buffer;
 }
