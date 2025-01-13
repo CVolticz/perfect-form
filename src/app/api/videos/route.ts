@@ -2,11 +2,16 @@
  * API Component for video management
  */
 // Library Level Import
+import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { BlobServiceClient } from '@azure/storage-blob';
 
 // Server Action Import
 import { saveVideoMetadataToDb } from '@/lib/postgres/saveVideoMetadata'; // Your function to save video metadata
+import { getVideoMetadataFromDb } from '@/lib/postgres/getVideoMetadata'; // Your function to save video metadata
+
+// API Level Import
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 
 // Define the shape of the Video interface
@@ -38,24 +43,32 @@ const containerClient = blobServiceClient.getContainerClient(AZURE_CONTAINER_NAM
  * @returns JSON string containing video object
  */
 export async function GET(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+
+  // Parse form data and get the file and userId from the request to get a list of video name
+  const userId = session?.user?.id || '';
+  const videoList = await getVideoMetadataFromDb({userId: userId});
   try {
+
+
     // Define the prefix for the "videos" subfolder
     const prefix = 'videos/';
 
     // List all blobs in the container with the "videos" prefix (subfolder)
     const videoBlobs: Video[] = [];
     for await (const blob of containerClient.listBlobsFlat({ prefix })) {
-      const videoUrl = `https://${AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${AZURE_CONTAINER_NAME}/${blob.name}?${process.env.AZURE_SAS_TOKEN}`;
+      if (videoList.includes(blob.name)) {
+        const videoUrl = `https://${AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${AZURE_CONTAINER_NAME}/${blob.name}?${process.env.AZURE_SAS_TOKEN}`;
 
-      // Debugging: Log the video URL and SAS token
-      // console.log('Video URL:', videoUrl);
-      
-      videoBlobs.push({
-        id: blob.name, // Blob name as ID
-        title: blob.name.split('/').pop() || '', // Get the actual video file name (e.g., video1.mp4)
-        videoUrl: videoUrl, // URL to the video
-        comments: [], // Initialize empty comments array
-      });
+        // Debugging: Log the video URL and SAS token
+        // console.log('Video URL:', videoUrl);
+        videoBlobs.push({
+          id: blob.name, // Blob name as ID
+          title: blob.name.split('/').pop() || '', // Get the actual video file name (e.g., video1.mp4)
+          videoUrl: videoUrl, // URL to the video
+          comments: [], // Initialize empty comments array
+        });
+      }
     }
 
     // Return the list of videos as a response
@@ -78,7 +91,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Parse form data and get the file and userId from the request
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
-    const userId = formData.get('userId') as string | null;
+    const userId = formData.get('userId') as string | '';
 
     if (!file || !userId) {
       return NextResponse.json({ error: 'Missing file or userId' }, { status: 400 });
@@ -111,7 +124,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-
+/**
+ * Helper function to convert to video stream
+ * @param stream 
+ * @returns 
+ */
 async function streamToArrayBuffer(stream: ReadableStream): Promise<ArrayBuffer> {
   const reader = stream.getReader();
   const chunks = [];

@@ -1,5 +1,4 @@
-"use client";
-
+'use client'
 /**
  * User Dashboard Component
  * Users can upload videos for trainers to view and comment on.
@@ -8,6 +7,7 @@
 
 // System Level Import
 import { useState, useEffect, Suspense } from 'react';
+
 
 // Component Level Import
 // import { VideoComponent } from "@/app/components/protected/VideoComponent"; // Adjust if needed
@@ -25,11 +25,14 @@ export default function Dashboard() {
   const [newComment, setNewComment] = useState<string>("");
   const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
 
+
+
   // Fetch videos from API
   useEffect(() => {
     async function fetchVideos() {
       try {
-        const response = await fetch('/api/videos'); // Fetch from your API
+        // Calling GET API to get the list of videos for respected user
+        const response = await fetch('/api/videos'); 
         const data: Video[] = await response.json(); // Type the response as Video[]
         setVideos(data);
         setActiveVideoId(data[0]?.id || null); // Set the first video as active by default
@@ -37,9 +40,10 @@ export default function Dashboard() {
         console.error('Error fetching videos:', error);
       }
     }
-
     fetchVideos();
   }, []);
+
+ 
 
   const handleAddComment = () => {
     if (newComment.trim() !== "" && activeVideoId !== null) {
