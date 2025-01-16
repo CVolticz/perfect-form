@@ -47,4 +47,4 @@ const TextField: React.FC<TextFieldProps> = ({
   )
 }
 
-export default TextField
+export default TextField;

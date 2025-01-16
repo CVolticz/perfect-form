@@ -22,7 +22,6 @@ export async function VideoComponent({ prefix }: VideoBlockProps) {
         token: process.env.BLOB_READ_WRITE_TOKEN
     })
     const url = blobs[0]?.url || '';
-    console.log(url);
     return (
         <video controls 
             style={{ width: '90%', height: 'auto' }} preload="none" aria-label="Video player">

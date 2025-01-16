@@ -11,7 +11,7 @@ import { saveVideoMetadataToDb } from '@/lib/postgres/saveVideoMetadata'; // You
 import { getVideoMetadataFromDb } from '@/lib/postgres/getVideoMetadata'; // Your function to save video metadata
 
 // API Level Import
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+// import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 
 // Define the shape of the Video interface
@@ -43,30 +43,31 @@ const containerClient = blobServiceClient.getContainerClient(AZURE_CONTAINER_NAM
  * @returns JSON string containing video object
  */
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-
-  // Parse form data and get the file and userId from the request to get a list of video name
-  const userId = session?.user?.id || '';
-  const videoList = await getVideoMetadataFromDb({userId: userId});
+  // const session = await getServerSession(authOptions);
   try {
+    // TODO: Maintain this metadata database
+    // Extract the search parameters from the request URL
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId') || '';
 
+    if (!userId) {
+      return NextResponse.json({ error: 'Missing file or userId' }, { status: 400 });
+    }
+    const videoList = await getVideoMetadataFromDb({userId: userId});
 
     // Define the prefix for the "videos" subfolder
+    // List all blobs in the container with the "videos" prefix (subfolder) and get all videos assigned to the user
     const prefix = 'videos/';
-
-    // List all blobs in the container with the "videos" prefix (subfolder)
     const videoBlobs: Video[] = [];
     for await (const blob of containerClient.listBlobsFlat({ prefix })) {
       if (videoList.includes(blob.name)) {
         const videoUrl = `https://${AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${AZURE_CONTAINER_NAME}/${blob.name}?${process.env.AZURE_SAS_TOKEN}`;
 
-        // Debugging: Log the video URL and SAS token
-        // console.log('Video URL:', videoUrl);
         videoBlobs.push({
-          id: blob.name, // Blob name as ID
-          title: blob.name.split('/').pop() || '', // Get the actual video file name (e.g., video1.mp4)
-          videoUrl: videoUrl, // URL to the video
-          comments: [], // Initialize empty comments array
+          id: blob.name,                            // Blob name as ID
+          title: blob.name.split('/').pop() || '',  // Get the actual video file name (e.g., video1.mp4)
+          videoUrl: videoUrl,                       // URL to the video
+          comments: [],                             // Initialize empty comments array
         });
       }
     }
