@@ -53,6 +53,7 @@ const Dashboard: React.FC<DashboardClientProps> = ({ session }) => {
             }); 
 
             const data: Video[] = await response.json(); // Type the response as Video[]
+            console.log('Fetched videos:', data);
             setVideos(data);
             setActiveVideoId(data[0]?.id || null); // Set the first video as active by default
         } catch (error) {
