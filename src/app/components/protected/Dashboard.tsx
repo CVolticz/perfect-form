@@ -148,7 +148,7 @@ const Dashboard: React.FC<DashboardClientProps> = ({ session }) => {
                             borderRadius: '5px',
                         }}
                     ></textarea>
-                    <button
+                    {/* <button
                         onClick={handleAddComment}
                         style={{
                             marginTop: '10px',
@@ -162,7 +162,7 @@ const Dashboard: React.FC<DashboardClientProps> = ({ session }) => {
                         }}
                     >
                         Submit
-                    </button>
+                    </button> */}
                 </div>
             </div>
         </div>
