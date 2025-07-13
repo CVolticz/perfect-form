@@ -137,4 +137,4 @@ const SignInButton = () => {
   )
 }
 
-export default SignInButton
+export default SignInButton;
