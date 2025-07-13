@@ -44,14 +44,12 @@ const Dashboard: React.FC<DashboardClientProps> = ({ session }) => {
                 toast.error('User ID not found');
                 return;
             }
-
             const params = new URLSearchParams({
                 userId: session.user.id,
             }).toString();            
             const response = await fetch(`/api/videos?${params}`, {
                 method: 'GET',
             }); 
-
             const data: Video[] = await response.json(); // Type the response as Video[]
             console.log('Fetched videos:', data);
             setVideos(data);
@@ -78,43 +76,53 @@ const Dashboard: React.FC<DashboardClientProps> = ({ session }) => {
     };
 
 
-    // Force Next to render the current active video  
-    const activeVideo = videos.find((video) => video.id === activeVideoId);
-
+    // Force Next to render the current active video (if any) 
+    const activeVideo = Array.isArray(videos)
+    ? videos.find((video) => video.id === activeVideoId)
+    : null;
+    
     return (
         <div style={{ display: 'flex', height: '75vh', fontFamily: 'Arial, sans-serif'}}>
             {/* Left Side: Videos List */}
             <div style={{ flex: 1, backgroundColor: '#f4f4f4', padding: '20px', overflowY: 'auto', borderRight: '1px solid #ddd' }}>
                 <h2>Videos</h2>
                 <div>
-                    {videos.map((video) => (
+                    {Array.isArray(videos) && videos.length > 0 ? (
+                    videos.map((video) => (
                     <div
                         key={video.id}
                         style={{
-                        padding: '10px',
-                        marginBottom: '10px',
-                        border: activeVideoId === video.id ? '2px solid #0070f3' : '1px solid #ddd',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.3s ease',
-                        backgroundColor: activeVideoId === video.id ? '#e0f7fa' : 'transparent',
-                        }}
-                        onClick={() => setActiveVideoId(video.id)}
-                    >
-                        {video.title}
-                    </div>
-                    ))}
+                            padding: '10px',
+                            marginBottom: '10px',
+                            border: activeVideoId === video.id ? '2px solid #0070f3' : '1px solid #ddd',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.3s ease',
+                            backgroundColor: activeVideoId === video.id ? '#e0f7fa' : 'transparent'}}
+                            onClick={() => setActiveVideoId(video.id)}
+                        >
+                            {video.title}
+                        </div>
+                    ))) :
+                    (
+                        <p>
+                            No Videos Found
+                        </p>
+                    )}
                 </div>
             </div>
 
             {/* Middle: Active Video */}
             <div style={{ flex: 2, backgroundColor: "#000", display: "flex", justifyContent: "center", alignItems: "center", padding: "10px" }}>
                 <Suspense fallback={<p>Loading video...</p>}>
-                {activeVideo ? (
+                {Array.isArray(videos) && videos.length > 0 ? activeVideo ? (
                     <VideoComponent key={activeVideo.videoUrl} videoUrl={activeVideo.videoUrl} />
-                ) : (
+                ) : ( 
                     <p style={{ color: "#fff" }}>Select a video to play</p>
+                ) : (
+                    <p style={{ color: "#fff" }}>Welcome Trainee! Please Upload Your Videos to Receive Feedbacks</p>
                 )}
+
                 </Suspense>
             </div>
 
@@ -122,7 +130,8 @@ const Dashboard: React.FC<DashboardClientProps> = ({ session }) => {
             <div style={{ flex: 1, backgroundColor: '#f4f4f4', padding: '20px', overflowY: 'auto', borderRight: '1px solid #ddd' }}>
                 <h2>Comments</h2>
                 <div>
-                    {videos.find((video) => video.id === activeVideoId)?.comments.map((comment, index) => (
+                    {Array.isArray(videos) && videos.length > 0 ? ( 
+                        videos.find((video) => video.id === activeVideoId)?.comments.map((comment, index) => (
                         <div
                             key={index}
                             style={{
@@ -134,7 +143,12 @@ const Dashboard: React.FC<DashboardClientProps> = ({ session }) => {
                         > 
                             {comment} 
                         </div>
-                    ))}
+                    ))):
+                    (
+                        <p>
+                            Welcome Trainee! Please Upload Your Videos to Receive Feedbacks
+                        </p>
+                    )}
                 </div>
                 <div style={{ marginTop: '20px' }}>
                     <textarea

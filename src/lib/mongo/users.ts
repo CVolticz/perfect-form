@@ -2,8 +2,8 @@ import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongo/client';
 
 let client;
-let db;
-let users;
+let db: any;
+let users: { findOne: (arg0: { _id?: any; email?: any; }) => any; updateOne: (arg0: { email: any; }, arg1: { $set: any; }) => any; };
 
 async function init() {
   if (db) return
@@ -19,12 +19,11 @@ async function init() {
 /////////////
 /// USERS ///
 /////////////
-
-export async function findUserById(userId) {
+export async function findUserById(userId: string) {
   try {
     if (!users) await init()
 
-    const user = await users.findOne({ _id: ObjectId(userId) })
+    const user = await users.findOne({ _id: new ObjectId(userId) })
 
     if (!user) throw new Error()
 
@@ -34,7 +33,7 @@ export async function findUserById(userId) {
   }
 }
 
-export async function findUserByEmail(email) {
+export async function findUserByEmail(email: string) {
   try {
     if (!users) await init()
 
@@ -48,7 +47,7 @@ export async function findUserByEmail(email) {
   }
 }
 
-export async function updateUser(email, update) {
+export async function updateUser(email: string, update: { name: string; }) {
   try {
     if (!users) await init()
 

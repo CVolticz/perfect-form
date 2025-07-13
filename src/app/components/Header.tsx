@@ -1,27 +1,38 @@
 import Link from 'next/link';
 import SignInButton from '@/app/components/authentication/SignInButton';
 
-const Header = () => {
+
+function Header() {
   return (
-    <header className='flex h-24 flex-col justify-center bg-stone-100'>
-      <nav className='container'>
-        <ul className='flex items-center justify-between gap-8 font-medium tracking-wider text-stone-500'>
-          <li className='text-sm'>
-            <Link href='/'>Home</Link>
-          </li>
-          <li className='text-sm'>
-            <Link href='/protected/dashboard'> User Dashboard </Link>
-          </li>
-          <li className='text-sm'>
-            <Link href='/protected/lesson'> Lesson Plan </Link>
-          </li>
-          <li>
-            <SignInButton />
-          </li>
-        </ul>
-      </nav>
+    <header className="border-b bg-white shadow-sm">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <div className="flex items-center gap-10">
+          <Link 
+            href="/"
+            className="text-lg font-bold text-red-600">
+              Perfect Form
+          </Link>
+          <nav className="flex items-center gap-6 text-sm">
+            <Link
+              href="/"
+              className="relative font-medium text-red-600 after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:bg-red-600"
+            >
+              Home
+            </Link>
+            <Link href="/services" className="text-black hover:text-red-600">Services</Link>
+            <Link href="/gallery" className="text-black hover:text-red-600">Gallery</Link>
+            <Link href="/coaches" className="text-black hover:text-red-600">Coaches</Link>
+          </nav>
+        </div>
+        <div className="flex items-center">
+          <SignInButton />
+        </div>
+      </div>
     </header>
   )
 }
+
+
+
 
 export default Header

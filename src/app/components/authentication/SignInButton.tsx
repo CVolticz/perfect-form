@@ -8,8 +8,11 @@ import clsx from 'clsx';
 
 import {
   ArrowRightIcon,
-  Cog8ToothIcon
+  Cog8ToothIcon,
+  ChartBarSquareIcon
 } from '@heroicons/react/24/solid'
+
+
 
 const SignInButton = () => {
   const { data: session } = useSession()
@@ -77,6 +80,20 @@ const SignInButton = () => {
                   <p className='text-stone-400'>{session.user.email}</p>
                 </div>
               </div>
+              <MenuItem>
+                {({ active }) => (
+                  <Link
+                    href='/protected/dashboard'
+                    className={clsx(
+                      active && 'bg-stone-700/50 dark:bg-stone-200',
+                      'inline-flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500'
+                    )}
+                  >
+                    <ChartBarSquareIcon className='h-5 w-5 text-stone-400' />
+                    <span>Dashboard</span>
+                  </Link>
+                )}
+              </MenuItem>
               <MenuItem>
                 {({ active }) => (
                   <Link
