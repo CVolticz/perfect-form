@@ -4,9 +4,6 @@
  *  1. assign todos tasks to each trainees
  *  2. watch trainee's upload video and add comments
  */
-// System Level Import
-import React from 'react';
-
 // Library Level Import
 import { getServerSession } from 'next-auth';
 
@@ -15,16 +12,19 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import TraineeCard from '@/app/components/trainers/TraineeCard';
 
 export default async function TrainerPage() {
-    const session = await getServerSession(authOptions);
 
     // Handle user authorization
-    if (session?.user.role !== 'admin') {
+    const session = await getServerSession(authOptions);
+    if (!session || (session.user.role !== 'trainer')) {
         return (
             <section className='py-24'>
                 <div className='container'>
-                    <h1 className='text-2xl font-bold'>
-                        You are not authorize to access this page!
+                    <h1 className='text-red-500 text-2xl font-bold'>
+                        ACCESS DENIED!
                     </h1>
+                    <p className="text-red-500">
+                        You are not authorize to access this page!
+                    </p>
                 </div>
             </section>
         )

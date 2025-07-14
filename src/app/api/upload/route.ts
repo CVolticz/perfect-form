@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 
 // Server Action Import
-import { saveVideoMetadataToDb } from '@/lib/postgres/saveVideoMetadata'; // Your function to save video metadata
+import { saveVideoMetadataToDb } from '@/lib/postgres/saveTraineeVideoMetadata'; // Your function to save video metadata
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {

@@ -24,7 +24,7 @@ interface DashboardClientProps {
     session: Session;
 }
   
-const Dashboard: React.FC<DashboardClientProps> = ({ session }) => {
+function Dashboard({ session }: DashboardClientProps) {
     const [videos, setVideos] = useState<Video[]>([]);
     const [newComment, setNewComment] = useState<string>("");
     const [activeVideoId, setActiveVideoId] = useState<number | null>(null);

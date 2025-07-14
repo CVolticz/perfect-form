@@ -19,7 +19,6 @@ export async function getVideoMetadataFromDb({ userId }: VideoMetaDataProps) {
     const client = await pool.connect();
 
     try {
-        // Insert video metadata into your database
         const query = `
             SELECT video_path
             FROM videos
@@ -29,8 +28,8 @@ export async function getVideoMetadataFromDb({ userId }: VideoMetaDataProps) {
         const videoName = result.rows.map(res => res.video_path);
         return videoName; // Return the saved video record
     } catch (error) {
-        console.error('Error saving video metadata:', error);
-        throw new Error('Failed to save video metadata');
+        console.error('Error fetching video metadata:', error);
+        throw new Error('Failed to fetch video metadata');
     } finally {
         client.release();
     }

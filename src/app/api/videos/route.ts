@@ -1,5 +1,5 @@
 /**
- * API Component for video management
+ * API Route for video management
  */
 // Library Level Import
 import { getServerSession } from 'next-auth';
@@ -7,8 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { BlobServiceClient } from '@azure/storage-blob';
 
 // Server Action Import
-import { saveVideoMetadataToDb } from '@/lib/postgres/saveVideoMetadata'; // Your function to save video metadata
-import { getVideoMetadataFromDb } from '@/lib/postgres/getVideoMetadata'; // Your function to save video metadata
+import { saveVideoMetadataToDb } from '@/lib/postgres/saveTraineeVideoMetadata'; // Your function to save video metadata
+import { getVideoMetadataFromDb } from '@/lib/postgres/getTraineeVideoMetadata'; // Your function to save video metadata
 
 // API Level Import
 // import { authOptions } from '@/app/api/auth/[...nextauth]/route';
