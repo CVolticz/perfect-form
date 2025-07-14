@@ -9,7 +9,7 @@ import { getServerSession } from 'next-auth';
 
 // API Level Import
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import TraineeCard from '@/app/components/trainers/TraineeCard';
+import TrainerDashboard from '@/app/components/protected/TrainerDashboard';
 
 export default async function TrainerPage() {
 
@@ -29,38 +29,9 @@ export default async function TrainerPage() {
             </section>
         )
     }
-
-    // Dummy Data
-    // TODO: replace with API call
-    const cards = [
-        {
-            name: "James",
-            id: "123",
-            description: "This is the description for card 1.",
-        },
-        {
-            name: "Bob",
-            id: "456",
-            description: "This is the description for card 2.",
-        },
-        {
-            name: "Sarah",
-            id: "789",
-            description: "This is the description for card 3.",
-        },
-    ];
-
     return (
         <section className="py-24">
-            <div className="container p-5 text-center">
-                <h1 className="text-2xl font-bold">Trainer Dashboard</h1>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-items-center">
-                    {cards.map((card, index) => (
-                        <TraineeCard 
-                            key={index} {...card} />
-                    ))}
-                </div>
-            </div>
+            <TrainerDashboard session={session} />
         </section>
     );
 

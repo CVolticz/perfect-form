@@ -9,7 +9,8 @@ import clsx from 'clsx';
 import {
   ArrowRightIcon,
   Cog8ToothIcon,
-  ChartBarSquareIcon
+  ChartBarSquareIcon,
+  ClipboardDocumentCheckIcon
 } from '@heroicons/react/24/solid'
 
 
@@ -94,6 +95,23 @@ const SignInButton = () => {
                   </Link>
                 )}
               </MenuItem>
+              {/* Trainer Dashboard — only show if role is trainer */}
+              {session.user.role === 'trainer' && (
+                <MenuItem>
+                  {({ active }) => (
+                    <Link
+                      href='/protected/trainer'
+                      className={clsx(
+                        active && 'bg-stone-700/50 dark:bg-stone-200',
+                        'inline-flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500'
+                      )}
+                    >
+                      <ClipboardDocumentCheckIcon className='h-5 w-5 text-stone-400' />
+                      <span>Trainer Dashboard</span>
+                    </Link>
+                  )}
+                </MenuItem>
+              )}
               <MenuItem>
                 {({ active }) => (
                   <Link
