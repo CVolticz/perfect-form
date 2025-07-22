@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
-import clsx from 'clsx';
 
 import {
   ArrowRightIcon,
@@ -45,14 +44,14 @@ const SignInButton = () => {
             )}
           </MenuButton>
           <Transition
-            enter='transition duration-150 ease-out'
-            enterFrom='transform scale-95 opacity-0'
-            enterTo='transform scale-100 opacity-100'
-            leave='transition duration-150 ease-out'
-            leaveFrom='transform scale-100 opacity-100'
-            leaveTo='transform scale-95 opacity-0'
+            enter="transition duration-150 ease-out"
+            enterFrom="transform scale-95"
+            enterTo="transform scale-100"
+            leave="transition duration-150 ease-in"
+            leaveFrom="transform scale-100"
+            leaveTo="transform scale-95"
           >
-            <MenuItems className='bg-react dark:text-react absolute right-0 mt-1 flex w-96 origin-top-right flex-col rounded-xl py-6 text-white shadow-lg focus:outline-none dark:bg-white'>
+          <MenuItems className="absolute right-0 mt-2 w-96 origin-top-right rounded-xl bg-white text-black shadow-xl ring-1 ring-stone-200 z-50 focus:outline-none p-4">
               <div className='mb-4 flex gap-4 px-6 text-sm'>
                 {session?.user?.image ? (
                   <div className='relative h-10 w-10'>
@@ -81,64 +80,32 @@ const SignInButton = () => {
                   <p className='text-stone-400'>{session.user.email}</p>
                 </div>
               </div>
-              <MenuItem>
-                {({ active }) => (
-                  <Link
-                    href='/protected/dashboard'
-                    className={clsx(
-                      active && 'bg-stone-700/50 dark:bg-stone-200',
-                      'inline-flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500'
-                    )}
-                  >
-                    <ChartBarSquareIcon className='h-5 w-5 text-stone-400' />
-                    <span>Dashboard</span>
-                  </Link>
-                )}
+              <MenuItem as={Link} href='/protected/dashboard'>
+                <div className='group flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500 active:bg-stone-700/50 dark:active:bg-stone-200'>
+                  <ChartBarSquareIcon className='h-5 w-5 text-stone-400' />
+                  <span>Dashboard</span>
+                </div>
               </MenuItem>
               {/* Trainer Dashboard — only show if role is trainer */}
               {session.user.role === 'trainer' && (
-                <MenuItem>
-                  {({ active }) => (
-                    <Link
-                      href='/protected/trainer'
-                      className={clsx(
-                        active && 'bg-stone-700/50 dark:bg-stone-200',
-                        'inline-flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500'
-                      )}
-                    >
-                      <ClipboardDocumentCheckIcon className='h-5 w-5 text-stone-400' />
-                      <span>Trainer Dashboard</span>
-                    </Link>
-                  )}
+                <MenuItem as={Link} href='/protected/trainer'>
+                  <div className='group flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500 active:bg-stone-700/50 dark:active:bg-stone-200'>
+                    <ClipboardDocumentCheckIcon className='h-5 w-5 text-stone-400' />
+                    <span>Trainer Dashboard</span>
+                  </div>
                 </MenuItem>
               )}
-              <MenuItem>
-                {({ active }) => (
-                  <Link
-                    href='/profile'
-                    className={clsx(
-                      active && 'bg-stone-700/50 dark:bg-stone-200',
-                      'inline-flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500'
-                    )}
-                  >
-                    <Cog8ToothIcon className='h-5 w-5 text-stone-400' />
-                    <span>Manage Account</span>
-                  </Link>
-                )}
+              <MenuItem as={Link} href='/profile'>
+                <div className='group flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500 active:bg-stone-700/50 dark:active:bg-stone-200'>
+                  <Cog8ToothIcon className='h-5 w-5 text-stone-400' />
+                  <span>Manage Account</span>
+                </div>
               </MenuItem>
-              <MenuItem>
-                {({ active }) => (
-                  <button
-                    className={clsx(
-                      active && 'bg-stone-700/50 dark:bg-stone-200',
-                      'inline-flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500'
-                    )}
-                    onClick={() => signOut()}
-                  >
-                    <ArrowRightIcon className='h-5 w-5 text-stone-400' />
-                    <span>Sign Out</span>
-                  </button>
-                )}
+              <MenuItem as='button' onClick={() => signOut()}>
+                <div className='group flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500 active:bg-stone-700/50 dark:active:bg-stone-200'>
+                  <ArrowRightIcon className='h-5 w-5 text-stone-400' />
+                  <span>Sign Out</span>
+                </div>
               </MenuItem>
             </MenuItems>
           </Transition>

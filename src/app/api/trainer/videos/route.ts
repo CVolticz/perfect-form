@@ -24,5 +24,5 @@ export async function GET() {
 
   // Fetch Videos Metadata
   const videos = await getTrainerVideoMetadataFromDb({ trainerID: session.user.id });
-  return NextResponse.json({ videos });
+  return NextResponse.json(videos);
 }

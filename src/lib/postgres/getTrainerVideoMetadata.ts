@@ -25,16 +25,18 @@ export async function getTrainerVideoMetadataFromDb({ trainerID }: TrainerVideoM
               v.video_path, 
               v.video_id, 
               v.uploaded_at
-              u.name as trainee_name
-              json_agg(json_build_object('content', c.content, 'created_at', c.created_at))
-                FILTER (WHERE c.id IS NOT NULL) AS comments
+              --u.name as trainee_name
+              --json_agg(json_build_object('content', c.content, 'created_at', c.created_at))
+              --  FILTER (WHERE c.id IS NOT NULL) AS comments
             FROM trainer_trainee_map m
-            JOIN videos v ON v.user_id = m.trainee_id
-            LEFT JOIN comments c ON c.video_id = v.video_id
+            JOIN videos v 
+              ON v.user_id = m.trainee_id
+            --LEFT JOIN comments c ON c.video_id = v.video_id
             WHERE m.trainer_id = $1
-            GROUP BY v.id, u.name
+            GROUP BY v.id
             ORDER BY v.uploaded_at DESC;
         `;
+        // Execute the query with the trainer ID
         const result = await client.query(query, [trainerID]);
         return result.rows; // Return the saved video record
     } catch (error) {

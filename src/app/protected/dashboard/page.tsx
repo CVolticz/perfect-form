@@ -16,7 +16,10 @@ export default async function DashboardPage() {
     const session = await getServerSession(authOptions);
 
     // Check if the session exists and if the user has the correct role
-    if (!session || (session.user.role !== 'user' && session.user.role !== 'admin')) {
+    if (
+        !session ||
+        (session.user.role !== 'user' && session.user.role !== 'trainer')
+    ) {
         return (
             <section className="py-24">
             <div className="container">

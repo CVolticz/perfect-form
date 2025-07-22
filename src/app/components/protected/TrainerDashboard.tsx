@@ -5,7 +5,7 @@
  * Enable Trainer to provide comments on each video
  */
 // System Level Import
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 
 // Library Level Import
 import { Session } from 'next-auth';
@@ -40,10 +40,12 @@ export default function TrainerDashboard({ session }: TrainerDashboardClientProp
         method: 'GET',
       });
 
-      const videos = await response.json(); // Type the response as Video[]
-      console.log('Fetched videos:', videos);
-      setVideos(videos);
-      setLoading(false)
+      console.log('Response status:', response.status);
+      if (response.status === 200) {
+        const videos = await response.json(); // Type the response as Video[]
+        setVideos(videos);
+      } 
+      setLoading(false);
     } catch (error) {
         console.error('Error fetching videos:', error);
     }
@@ -93,40 +95,46 @@ export default function TrainerDashboard({ session }: TrainerDashboardClientProp
     );
   }
 
-  
+  console.log('Videos:', videos);
+
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
       <h1 className="text-3xl font-bold">Trainer Dashboard</h1>
-      {videos.map(video => (
-        <div key={video.id} className="border p-4 rounded shadow">
-          <h2 className="font-semibold">{video.title} — {video.trainee_name}</h2>
-          <video src={video.video_url} controls className="w-full my-2 rounded" />
-          <h3 className="text-sm font-medium mb-1">Comments</h3>
-          <ul className="text-sm space-y-1">
-            {(video.comments || []).map((c: any, i: number) => (
-              <li key={i}>– {c.content}</li>
-            ))}
-          </ul>
-          <form
-            className="mt-2"
-            onSubmit={async (e) => {
-              e.preventDefault()
-              const content = (e.currentTarget.elements.namedItem('content') as HTMLInputElement).value
-              await submitComment(video.id, content)
-              e.currentTarget.reset()
-            }}
-          >
-            <input
-              type="text"
-              name="content"
-              placeholder="Add a comment..."
-              className="border px-2 py-1 mr-2 rounded w-2/3"
-              required
-            />
-            <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded">Submit</button>
-          </form>
-        </div>
-      ))}
+
+      {/* Handle case when no videos are available */}
+      {/* <div className="text-center py-12 text-stone-500"> */}
+      <Suspense fallback={<p>Loading video...</p>}>
+        {Array.isArray(videos) && videos.length > 0 ? (
+            videos.map((video) => (
+              <VideoComponent key={video.video_id} videoUrl={video.video_url} />
+          ))) : (
+            <p style={{ color: "#fff" }}>Welcome Trainee! Please Upload Your Videos to Receive Feedbacks</p>
+        )}
+      </Suspense>
+      {/* </div> */}
     </div>
   )
 }
+
+
+
+// TODO: refactor this to VideoComponent.tsx
+// Video component that takes video URL as a prop
+interface VideoComponentProps {
+    videoUrl: string;
+}
+
+function VideoComponent({ videoUrl }: VideoComponentProps) {
+  return (
+    <video 
+      controls 
+      style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+      preload="auto">
+      <source src={videoUrl} type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+  );
+}
+
+
+

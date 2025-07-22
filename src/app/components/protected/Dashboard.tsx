@@ -10,6 +10,7 @@ import { useState, useEffect, Suspense } from 'react';
 // Library Level Import
 import { Session } from 'next-auth';
 import { toast } from 'react-toastify';
+import { Libre_Caslon_Display } from 'next/font/google';
 
 
 // Define the shape of video data
@@ -80,6 +81,8 @@ function Dashboard({ session }: DashboardClientProps) {
     const activeVideo = Array.isArray(videos)
     ? videos.find((video) => video.id === activeVideoId)
     : null;
+
+    console.log('Active Video:', activeVideo);
     
     return (
         <div style={{ display: 'flex', height: '75vh', fontFamily: 'Arial, sans-serif'}}>
