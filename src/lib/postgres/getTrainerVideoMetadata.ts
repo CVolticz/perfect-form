@@ -38,7 +38,8 @@ export async function getTrainerVideoMetadataFromDb({ trainerID }: TrainerVideoM
         `;
         // Execute the query with the trainer ID
         const result = await client.query(query, [trainerID]);
-        return result.rows; // Return the saved video record
+        const videoName = result.rows.map(res => res.video_path);
+        return videoName; // Return the saved video record
     } catch (error) {
         console.error('Error fetching video metadata:', error);
         throw new Error('Failed to fetch video metadata');

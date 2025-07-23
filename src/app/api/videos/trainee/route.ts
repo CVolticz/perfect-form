@@ -2,16 +2,12 @@
  * API Route for video management
  */
 // Library Level Import
-import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { BlobServiceClient } from '@azure/storage-blob';
 
 // Server Action Import
 import { saveVideoMetadataToDb } from '@/lib/postgres/saveTraineeVideoMetadata'; // Your function to save video metadata
 import { getVideoMetadataFromDb } from '@/lib/postgres/getTraineeVideoMetadata'; // Your function to save video metadata
-
-// API Level Import
-// import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 
 // Define the shape of the Video interface
@@ -43,7 +39,6 @@ const containerClient = blobServiceClient.getContainerClient(AZURE_CONTAINER_NAM
  * @returns JSON string containing video object
  */
 export async function GET(request: NextRequest) {
-  // const session = await getServerSession(authOptions);
   try {
     // TODO: Maintain this metadata database
     // Extract the search parameters from the request URL

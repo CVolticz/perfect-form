@@ -12,12 +12,21 @@ import { Session } from 'next-auth';
 import { toast } from 'react-toastify';
 
 
+// Define the shape of video data
+interface Video {
+  id: number;
+  title: string;
+  videoUrl: string;
+  comments: string[];
+}
+
+
 interface TrainerDashboardClientProps {
     session: Session;
 }
 
 export default function TrainerDashboard({ session }: TrainerDashboardClientProps) {
-  const [videos, setVideos] = useState<any[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Load Videos on Component mount
@@ -35,17 +44,19 @@ export default function TrainerDashboard({ session }: TrainerDashboardClientProp
         toast.error('User ID not found');
         return;
       }
-                  
-      const response = await fetch(`/api/trainer/videos`, {
+
+      const params = new URLSearchParams({
+          userId: session.user.id,
+      }).toString();
+            
+      const response = await fetch(`/api/videos/trainer?${params}`, {
         method: 'GET',
       });
 
-      console.log('Response status:', response.status);
-      if (response.status === 200) {
-        const videos = await response.json(); // Type the response as Video[]
-        setVideos(videos);
-      } 
+      const videos: Video[] = await response.json(); // Type the response as Video[]
+      setVideos(videos);
       setLoading(false);
+
     } catch (error) {
         console.error('Error fetching videos:', error);
     }
@@ -95,23 +106,24 @@ export default function TrainerDashboard({ session }: TrainerDashboardClientProp
     );
   }
 
-  console.log('Videos:', videos);
+  console.log('Fetched videos:', videos);
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
       <h1 className="text-3xl font-bold">Trainer Dashboard</h1>
+      
+      <div className="flex-[2] bg-black flex justify-center items-center p-2 w-[430px] h-[932px]">
 
       {/* Handle case when no videos are available */}
-      {/* <div className="text-center py-12 text-stone-500"> */}
-      <Suspense fallback={<p>Loading video...</p>}>
-        {Array.isArray(videos) && videos.length > 0 ? (
-            videos.map((video) => (
-              <VideoComponent key={video.video_id} videoUrl={video.video_url} />
-          ))) : (
-            <p style={{ color: "#fff" }}>Welcome Trainee! Please Upload Your Videos to Receive Feedbacks</p>
-        )}
-      </Suspense>
-      {/* </div> */}
+        <Suspense fallback={<p>Loading video...</p>}>
+          {Array.isArray(videos) && videos.length > 0 ? (
+              videos.map((video) => (
+                <VideoComponent key={video.videoUrl} videoUrl={video.videoUrl} />
+            ))) : (
+              <p style={{ color: "#fff" }}>Welcome Trainee! Please Upload Your Videos to Receive Feedbacks</p>
+          )}
+        </Suspense>
+      </div>
     </div>
   )
 }

@@ -84,84 +84,105 @@ function Dashboard({ session }: DashboardClientProps) {
     console.log('Active Video:', activeVideo);
     
     return (
-        <div className="flex h-[932px] font-sans">
+        <div style={{ display: 'flex', height: '75vh', fontFamily: 'Arial, sans-serif'}}>
             {/* Left Side: Videos List */}
             <div className="flex-1 bg-[#f4f4f4] p-5 overflow-y-auto border-r border-[#ddd]">
                 <h2>Videos</h2>
                 <div>
-                {Array.isArray(videos) && videos.length > 0 ? (
+                    {Array.isArray(videos) && videos.length > 0 ? (
                     videos.map((video) => (
                     <div
                         key={video.id}
-                        className={`p-2 mb-2 rounded cursor-pointer transition-colors ${
-                        activeVideoId === video.id
-                            ? 'border-2 border-[#0070f3] bg-[#e0f7fa]'
-                            : 'border border-[#ddd]'
-                        }`}
-                        onClick={() => setActiveVideoId(video.id)}
-                    >
-                        {video.title}
-                    </div>
-                    ))
-                ) : (
-                    <p>No Videos Found</p>
-                )}
+                        style={{
+                            padding: '10px',
+                            marginBottom: '10px',
+                            border: activeVideoId === video.id ? '2px solid #0070f3' : '1px solid #ddd',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.3s ease',
+                            backgroundColor: activeVideoId === video.id ? '#e0f7fa' : 'transparent'}}
+                            onClick={() => setActiveVideoId(video.id)}
+                        >
+                            {video.title}
+                        </div>
+                    ))) :
+                    (
+                        <p>
+                            No Videos Found
+                        </p>
+                    )}
                 </div>
             </div>
 
             {/* Middle: Active Video */}
-            <div className="flex-[2] bg-black flex justify-center items-center p-2 overflow-hidden">
-                <Suspense fallback={<p className="text-white">Loading video...</p>}>
-                    {Array.isArray(videos) && videos.length > 0 ? (
-                    activeVideo ? (
-                        <div className="h-full flex justify-center items-center">
-                        <video
-                            key={activeVideo.videoUrl}
-                            src={activeVideo.videoUrl}
-                            controls
-                            className="max-h-full max-w-full object-contain"
-                        />
-                        </div>
-                    ) : (
-                        <p className="text-white">Select a video to play</p>
-                    )
-                    ) : (
-                    <p className="text-white">
-                        Welcome Trainee! Please Upload Your Videos to Receive Feedbacks
-                    </p>
-                    )}
+            <div className="flex-[2] bg-black flex justify-center items-center p-2 w-[430px] h-[932px]">
+                <Suspense fallback={<p>Loading video...</p>}>
+                {Array.isArray(videos) && videos.length > 0 ? activeVideo ? (
+                    <VideoComponent key={activeVideo.videoUrl} videoUrl={activeVideo.videoUrl} />
+                ) : ( 
+                    <p style={{ color: "#fff" }}>Select a video to play</p>
+                ) : (
+                    <p style={{ color: "#fff" }}>Welcome Trainee! Please Upload Your Videos to Receive Feedbacks</p>
+                )}
+
                 </Suspense>
             </div>
 
             {/* Right Side: Comments */}
-            <div className="flex-1 bg-[#f4f4f4] p-5 overflow-y-auto border-l border-[#ddd]">
+            <div className="flex-1 bg-[#f4f4f4] p-5 overflow-y-auto border-r border-[#ddd]">
                 <h2>Comments</h2>
                 <div>
-                {Array.isArray(videos) && videos.length > 0 ? (
-                    videos
-                    .find((video) => video.id === activeVideoId)
-                    ?.comments.map((comment, index) => (
+                    {Array.isArray(videos) && videos.length > 0 ? ( 
+                        videos.find((video) => video.id === activeVideoId)?.comments.map((comment, index) => (
                         <div
-                        key={index}
-                        className="mb-2 p-2 border border-[#ddd] rounded bg-[#f9f9f9]"
-                        >
-                        {comment}
+                            key={index}
+                            style={{
+                            marginBottom: '10px',
+                            padding: '10px',
+                            border: '1px solid #ddd',
+                            borderRadius: '5px',
+                            backgroundColor: '#f9f9f9'}}
+                        > 
+                            {comment} 
                         </div>
-                    ))
-                ) : (
-                    <p>Welcome Trainee! Please Upload Your Videos to Receive Feedbacks</p>
-                )}
+                    ))):
+                    (
+                        <p>
+                            Welcome Trainee! Please Upload Your Videos to Receive Feedbacks
+                        </p>
+                    )}
                 </div>
-                <div className="mt-5">
-                <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Add a comment..."
-                    className="w-full h-20 p-2 border border-[#ddd] rounded resize-none"
-                ></textarea>
+                <div style={{ marginTop: '20px' }}>
+                    <textarea
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder="Add a comment..."
+                        style={{
+                            width: '100%',
+                            height: '80px',
+                            padding: '10px',
+                            border: '1px solid #ddd',
+                            borderRadius: '5px',
+                        }}
+                    ></textarea>
+                    {/* <button
+                        onClick={handleAddComment}
+                        style={{
+                            marginTop: '10px',
+                            padding: '10px 20px',
+                            backgroundColor: '#0070f3',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.3s ease',
+                        }}
+                    >
+                        Submit
+                    </button> */}
                 </div>
             </div>
-            </div>
+        </div>
     );
 }
 
