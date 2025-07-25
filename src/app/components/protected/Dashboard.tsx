@@ -10,7 +10,6 @@ import { useState, useEffect, Suspense } from 'react';
 // Library Level Import
 import { Session } from 'next-auth';
 import { toast } from 'react-toastify';
-import { Libre_Caslon_Display } from 'next/font/google';
 
 
 // Define the shape of video data

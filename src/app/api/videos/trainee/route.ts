@@ -6,10 +6,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { BlobServiceClient } from '@azure/storage-blob';
 
 // Server Action Import - PRISMA Functions
-import { saveTraineeVideoMetadataToDb } from '@/services/saveTraineeVideoMetadata';
-import { getTraineeVideoMetadataFromDb } from '@/services/getTraineeVideoMetadata'; 
-// ------------------------------------------------------------------
+import { getTraineeVideoMetadataFromDb, saveTraineeVideoMetadataToDb } from '@/services/videoManagement';
 
+// ------------------------------------------------------------------
 
 // Define the shape of the Video interface
 interface Video {
