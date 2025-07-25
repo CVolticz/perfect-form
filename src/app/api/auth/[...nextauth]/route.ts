@@ -1,29 +1,31 @@
 import NextAuth, { NextAuthOptions, DefaultSession } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import { PrismaClient } from "@prisma/client";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
-import { MongoDBAdapter } from "@auth/mongodb-adapter";
-import clientPromise from '@/lib/mongo/client';
+const prisma = new PrismaClient();
 
-// Define the type for the extended JWT token
+// Extend NextAuth types
 declare module 'next-auth' {
   interface User {
-    role?: string; // Custom role added to user
+    role?: string;
   }
 
   interface Session {
     user: {
-      id?: string; // User ID added to session
-      role?: string; // Role added to session
-    } & DefaultSession["user"]; // Include default fields (e.g., name, email, image)
+      id?: string;
+      role?: string;
+    } & DefaultSession["user"];
   }
 
   interface JWT {
-    role?: string; // Role added to JWT token
+    role?: string;
   }
 }
 
-// Define auth options with proper types
+// Auth configuration
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -34,50 +36,35 @@ export const authOptions: NextAuthOptions = {
           name: profile.name,
           email: profile.email,
           image: profile.picture,
-          role: profile.role ?? 'user', // Default role as 'user'
+          role: 'USER',
+          emailVerified: profile.email_verified ? new Date() : null,
         };
       },
-      // authorization: {
-      //   params: {
-      //     prompt: 'consent',
-      //     access_type: 'offline',
-      //     response_type: 'code',
-      //   },
-      // },
     }),
   ],
   callbacks: {
-    // JWT Callback to generate a token for the user
     async jwt({ token, user, trigger, session }) {
-      // Fetch specific user role during initial sign-in
       if (user) {
-        token.role = user.role;
+        token.role = (user as any).role;
       }
-
-      // Update token name with the session name
       if (trigger === 'update' && session?.name) {
         token.name = session.name;
       }
       return token;
     },
-    // Session Callback to generate the session object to be access by the user
     async session({ session, token }) {
-      // Expose role in the session
-      session.user.role = token.role as string | undefined;
-      session.user.id = token.sub
+      session.user.role = typeof token.role === 'string' ? token.role : undefined;
+      session.user.id = token.sub;
       return session;
     },
   },
   pages: {
-    signIn: '/signin'
+    signIn: '/signin',
   },
-  adapter: MongoDBAdapter(clientPromise),
   session: {
-    strategy: 'jwt'
-  }
+    strategy: 'jwt',
+  },
 };
 
-// API Route Handler
 const handler = NextAuth(authOptions);
-
 export { handler as GET, handler as POST };

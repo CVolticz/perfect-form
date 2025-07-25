@@ -8,13 +8,20 @@ import { signIn } from 'next-auth/react';
 
 import Button from './Button';
 
-const GoogleSignInButton = () => {
-  const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl')
+interface GoogleSignInButtonProps {
+  callbackUrl?: string;
+}
+
+
+function GoogleSignInButton({ callbackUrl }: GoogleSignInButtonProps) {
+  const searchParams = useSearchParams();
 
   return (
     <Button
       className='w-full'
+      // If callbackUrl is present in the URL (e.g., ?callbackUrl=/dashboard)
+      // then signIn will redirect to that URL.
+      // If callbackUrl is NOT present (null), then signIn will redirect to '/' by default.
       onClick={() => signIn('google', { callbackUrl: callbackUrl ?? undefined })}
     >
       <svg

@@ -11,7 +11,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 // Components Level Import
 import VideoUpload from '@/app/components/protected/VideoUpload';
 
-export default async function AvatarUploadPage() {
+export default async function Upload() {
   const session = await getServerSession(authOptions);
 
   // Handle user authorization

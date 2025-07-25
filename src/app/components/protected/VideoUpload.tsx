@@ -23,11 +23,11 @@ const VideoUpload = () => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('userId', session.user.id);
-
+    formData.append('title', file.name);
     setUploading(true);
 
     try {
-      const response = await fetch('/api/videos', {
+      const response = await fetch('/api/videos/trainee', {
         method: 'POST',
         body: formData,
       });

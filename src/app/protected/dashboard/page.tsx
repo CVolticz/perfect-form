@@ -18,7 +18,7 @@ export default async function DashboardPage() {
     // Check if the session exists and if the user has the correct role
     if (
         !session ||
-        (session.user.role !== 'user' && session.user.role !== 'trainer')
+        (session.user.role !== 'USER' && session.user.role !== 'TRAINER')
     ) {
         return (
             <section className="py-24">

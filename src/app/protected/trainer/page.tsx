@@ -15,7 +15,7 @@ export default async function TrainerPage() {
 
     // Handle user authorization
     const session = await getServerSession(authOptions);
-    if (!session || (session.user.role !== 'trainer')) {
+    if (!session || (session.user.role !== 'TRAINER')) {
         return (
             <section className='py-24'>
                 <div className='container'>

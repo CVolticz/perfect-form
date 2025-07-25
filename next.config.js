@@ -5,7 +5,9 @@ const nextConfig = {
         domains: ['lh3.googleusercontent.com'], // Add the domain here
     },
     experimental: {
-        serverActions: true,
+        serverActions: {
+            bodySizeLimit: '100mb', // Adjust this value as needed (e.g., '1gb', '500mb')
+        }
     }
 };
 

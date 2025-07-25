@@ -5,9 +5,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BlobServiceClient } from '@azure/storage-blob';
 
-// Server Action Import
-import { saveVideoMetadataToDb } from '@/lib/postgres/saveTraineeVideoMetadata'; // Your function to save video metadata
-import { getVideoMetadataFromDb } from '@/lib/postgres/getTraineeVideoMetadata'; // Your function to save video metadata
+// Server Action Import - PRISMA Functions
+import { saveTraineeVideoMetadataToDb } from '@/services/saveTraineeVideoMetadata';
+import { getTraineeVideoMetadataFromDb } from '@/services/getTraineeVideoMetadata'; 
+// ------------------------------------------------------------------
 
 
 // Define the shape of the Video interface
@@ -15,7 +16,7 @@ interface Video {
   id: string;
   title: string;
   videoUrl: string;
-  comments: string[];
+  comments?: string[];
 }
 
 // Azure Blob Storage Configuration
@@ -48,25 +49,31 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Missing file or userId' }, { status: 400 });
     }
-    const videoList = await getVideoMetadataFromDb({userId: userId});
+    
+    // --- Using Prisma to get video metadata ---
+    const dbVideos = await getTraineeVideoMetadataFromDb({ userId });
+    
+    // Create a map for quick lookup by videoPath (blob.name)
+    const dbVideoMap = new Map<string, typeof dbVideos[0]>();
+    dbVideos.forEach((video: typeof dbVideos[0]) => dbVideoMap.set(video.videoPath, video));
+    // ------------------------------------------
 
-    // Define the prefix for the "videos" subfolder
-    // List all blobs in the container with the "videos" prefix (subfolder) and get all videos assigned to the user
-    const prefix = 'videos/';
+    const prefix = 'videos/'; // Define the prefix for the "videos" subfolder
     const videoBlobs: Video[] = [];
-    for await (const blob of containerClient.listBlobsFlat({ prefix })) {
-      if (videoList.includes(blob.name)) {
-        const videoUrl = `https://${AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${AZURE_CONTAINER_NAME}/${blob.name}?${process.env.AZURE_SAS_TOKEN}`;
 
+    for await (const blob of containerClient.listBlobsFlat({ prefix })) {
+      const dbVideo = dbVideoMap.get(blob.name);
+
+      if (dbVideo) { // Only include blobs that have corresponding metadata in the DB for this user
+        const videoUrl = `https://${AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${AZURE_CONTAINER_NAME}/${blob.name}?${process.env.AZURE_SAS_TOKEN}`;
         videoBlobs.push({
-          id: blob.name,                            // Blob name as ID
-          title: blob.name.split('/').pop() || '',  // Get the actual video file name (e.g., video1.mp4)
-          videoUrl: videoUrl,                       // URL to the video
+          id: dbVideo.id,                            // Blob name as ID
+          title: dbVideo.title,  // Get the actual video file name (e.g., video1.mp4)
+          videoUrl: videoUrl,                          // URL to the video
           comments: [],                             // Initialize empty comments array
         });
       }
     }
-
     // Return the list of videos as a response
     return NextResponse.json(videoBlobs);
   } catch (error) {
@@ -88,9 +95,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const userId = formData.get('userId') as string | '';
+    const title = formData.get('title') as string | ''; // IMPORTANT: Add title here
 
-    if (!file || !userId) {
-      return NextResponse.json({ error: 'Missing file or userId' }, { status: 400 });
+
+    if (!file || !userId || !title) {
+      return NextResponse.json({ error: 'Missing file, userId, or title' }, { status: 400 });
     }
 
     // Convert the file stream to ArrayBuffer
@@ -107,8 +116,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Store the video metadata in PostgreSQL
     const videoUrl = blockBlobClient.url;
-    const videoMetadata = await saveVideoMetadataToDb({
+    const videoMetadata = await saveTraineeVideoMetadataToDb({
       userId: userId,
+      title: title,
       videoPath: filename,
       videoUrl: videoUrl,
     });
