@@ -4,21 +4,20 @@
  */
 // Import 'Prisma' namespace which contains the model types and enums
 import { prisma } from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
+import { User, Role } from '@prisma/client';
 
 // --- Type Definitions ---
 
 // Extend Prisma's User type to include the relations we're fetching
 // This helps with type safety when working with the fetched data
-export interface UserWithRelations extends Prisma.User {
+export interface UserWithRelations extends User {
   // `trainees` is the relation where this user is a TRAINER
   trainees?: Array<{
     trainee: {
       id: string;
       name: string | null;
       email: string;
-      // Use Prisma.Role here
-      role: Prisma.Role;
+      role: Role;
     };
   }>;
   // `trainers` is the relation where this user is a TRAINEE
@@ -27,8 +26,7 @@ export interface UserWithRelations extends Prisma.User {
       id: string;
       name: string | null;
       email: string;
-      // Use Prisma.Role here
-      role: Prisma.Role;
+      role: Role;
     };
   }>;
 }
@@ -127,7 +125,7 @@ export async function assignTraineeToTrainer(traineeId: string, trainerId: strin
 
     // Ensure the selected trainer has the 'TRAINER' or 'ADMIN' role
     // Use Prisma.Role here
-    if (trainer.role !== Prisma.Role.TRAINER && trainer.role !== Prisma.Role.ADMIN) {
+    if (trainer.role !== Role.TRAINER && trainer.role !== Role.ADMIN) {
       throw new Error('Selected user does not have a TRAINER or ADMIN role.');
     }
 

@@ -87,7 +87,7 @@ const SignInButton = () => {
                 </div>
               </MenuItem>
               {/* Trainer Dashboard — only show if role is trainer */}
-              {session.user.role === 'trainer' && (
+              {session.user.role === 'TRAINER' && (
                 <MenuItem as={Link} href='/protected/trainer'>
                   <div className='group flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500 active:bg-stone-700/50 dark:active:bg-stone-200'>
                     <ClipboardDocumentCheckIcon className='h-5 w-5 text-stone-400' />
