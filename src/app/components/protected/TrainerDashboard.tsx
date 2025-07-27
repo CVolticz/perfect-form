@@ -42,12 +42,17 @@ export default function TrainerDashboard({ session }: TrainerDashboardClientProp
   }, []);
 
   async function fetchTrainees() {
+
     try {
       if (!session?.user?.id) {
         toast.error('User ID not found');
         return;
       }
-      const response = await fetch(`/api/trainer/trainees?trainerId=${session.user.id}`);
+      const response = await fetch('/api/trainer/list', {
+        method: 'POST',
+        body: JSON.stringify({ trainerId: session.user.id, role: session.user.role }),
+        headers: { 'Content-Type': 'application/json' },
+      });
       const trainees: Trainee[] = await response.json();
       setTrainees(trainees);
     } catch (error) {
@@ -84,77 +89,77 @@ export default function TrainerDashboard({ session }: TrainerDashboardClientProp
   }
 
   return (
-    <div className="flex w-full h-[932px]">
-      {/* Left panel: Trainee list */}
-      <div className="flex-1 bg-gray-100 p-4 border-r border-gray-300 overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Your Trainees</h2>
-        <ul className="space-y-2">
+    <div className="flex flex-col md:flex-row w-full h-[932px]">
+      {/* Top panel or left column: Trainee dropdown */}
+      <div className="bg-gray-100 p-4 md:w-1/3 border-b md:border-b-0 md:border-r border-gray-300">
+        <h2 className="text-xl font-bold mb-4">Select a Trainee</h2>
+        <select
+          className="w-full p-2 border rounded bg-white"
+          value={selectedTraineeId ?? ''}
+          onChange={(e) => {
+            const traineeId = e.target.value;
+            setSelectedTraineeId(traineeId);
+            if (traineeId) fetchVideos(traineeId);
+          }}
+        >
+          <option value="">-- Choose a trainee --</option>
           {trainees.map((trainee) => (
-            <li key={trainee.id}>
-              <button
-                onClick={() => {
-                  setSelectedTraineeId(trainee.id);
-                  fetchVideos(trainee.id);
-                }}
-                className={`block w-full text-left p-2 rounded hover:bg-gray-200 ${
-                  selectedTraineeId === trainee.id ? 'bg-gray-300' : ''
-                }`}
-              >
-                {trainee.name}
-              </button>
-            </li>
+            <option key={trainee.id} value={trainee.id}>
+              {trainee.name}
+            </option>
           ))}
-        </ul>
+        </select>
       </div>
 
       {/* Right panel: Videos for selected trainee */}
-      <div className="flex-[2] bg-black flex flex-col p-4 overflow-y-auto">
+      <div className="flex-1 bg-black flex flex-col p-4 overflow-y-auto">
         <h2 className="text-white text-2xl font-semibold mb-4">Trainee Videos</h2>
         {loading ? (
           <p className="text-white">Loading videos...</p>
+        ) : selectedTraineeId === null ? (
+          <p className="text-white">Please select a trainee to view their videos.</p>
+        ) : videos.length === 0 ? (
+          <p className="text-white">No videos found for this trainee.</p>
         ) : (
           <div className="space-y-6">
-            {videos.length === 0 ? (
-              <p className="text-white">No videos found.</p>
-            ) : (
-              videos.map((video) => (
-                <div key={video.id} className="bg-white rounded shadow p-4">
-                  <video
-                    controls
-                    className="w-full max-h-[400px] object-contain mb-2"
-                    preload="auto"
-                  >
-                    <source src={video.videoUrl} type="video/mp4" />
-                  </video>
-                  <div className="space-y-2">
-                    <h3 className="font-semibold">Comments</h3>
-                    <ul className="list-disc list-inside text-sm text-gray-700">
-                      {video.comments.map((comment, idx) => (
-                        <li key={idx}>{comment}</li>
-                      ))}
-                    </ul>
-                    <textarea
-                      rows={2}
-                      className="w-full p-2 border rounded mt-2"
-                      placeholder="Write your comment here..."
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          const content = e.currentTarget.value.trim();
-                          if (content) {
-                            submitComment(video.id, content);
-                            e.currentTarget.value = '';
-                          }
+            {videos.map((video) => (
+              <div key={video.id} className="bg-white rounded shadow p-4">
+                <video
+                  controls
+                  className="w-full max-h-[400px] object-contain mb-2"
+                  preload="auto"
+                >
+                  <source src={video.videoUrl} type="video/mp4" />
+                </video>
+                <div className="space-y-2">
+                  <h3 className="font-semibold">Comments</h3>
+                  <ul className="list-disc list-inside text-sm text-gray-700">
+                    {video.comments.map((comment, idx) => (
+                      <li key={idx}>{comment}</li>
+                    ))}
+                  </ul>
+                  <textarea
+                    rows={2}
+                    className="w-full p-2 border rounded mt-2"
+                    placeholder="Write your comment here..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        const content = e.currentTarget.value.trim();
+                        if (content) {
+                          submitComment(video.id, content);
+                          e.currentTarget.value = '';
                         }
-                      }}
-                    />
-                  </div>
+                      }
+                    }}
+                  />
                 </div>
-              ))
-            )}
+              </div>
+            ))}
           </div>
         )}
       </div>
     </div>
   );
+
 }

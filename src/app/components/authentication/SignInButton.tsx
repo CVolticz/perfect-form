@@ -95,12 +95,14 @@ const SignInButton = () => {
                   </div>
                 </MenuItem>
               )}
-              <MenuItem as={Link} href='/profile'>
-                <div className='group flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500 active:bg-stone-700/50 dark:active:bg-stone-200'>
-                  <Cog8ToothIcon className='h-5 w-5 text-stone-400' />
-                  <span>Manage Account</span>
-                </div>
-              </MenuItem>
+              {session.user.role === 'ADMIN' && (
+                <MenuItem as={Link} href='/protected/admin'>
+                  <div className='group flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500 active:bg-stone-700/50 dark:active:bg-stone-200'>
+                    <Cog8ToothIcon className='h-5 w-5 text-stone-400' />
+                    <span>Admin Panel</span>
+                  </div>
+                </MenuItem>
+              )}
               <MenuItem as='button' onClick={() => signOut()}>
                 <div className='group flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500 active:bg-stone-700/50 dark:active:bg-stone-200'>
                   <ArrowRightIcon className='h-5 w-5 text-stone-400' />

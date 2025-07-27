@@ -109,6 +109,7 @@ export async function assignTraineeToTrainer(traineeId: string, trainerId: strin
     throw new Error('Cannot assign a user to themselves.');
   }
 
+  
   try {
     // Optional: Validate if trainer and trainee actually exist and have appropriate roles
     const [trainee, trainer] = await Promise.all([
@@ -185,5 +186,49 @@ export async function unassignTraineeFromTrainer(traineeId: string, trainerId: s
     }
     console.error('Error in unassignTraineeFromTrainer:', error);
     throw new Error(error.message || 'Failed to unassign trainee from trainer.');
+  }
+}
+
+/**
+ * Fetch all trainees for a specific trainer.
+ * 
+ * @param {string} trainerId - The ID of the trainer whose trainees are to be fetched.
+ * @returns {Promise<UserWithRelations[]>} A list of trainees assigned to the specified trainer.
+ * @param {string} role - The role of the user making the request
+ * @throws {Error} If there's an issue fetching trainees from the database.
+ */
+export async function getTraineesForTrainer(trainerId: string, role: string): Promise<UserWithRelations[]> {
+  if (!trainerId) {
+    throw new Error('Trainer ID is required to fetch trainees.');
+  }
+
+  if (role !== Role.TRAINER && role !== Role.ADMIN) {
+    throw new Error('Only users with TRAINER or ADMIN roles can fetch trainees.');
+  }
+
+  try {
+    const trainees = await prisma.user.findMany({
+      where: {
+        trainers: {
+          some: {
+            trainerId: trainerId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+
+    return trainees as UserWithRelations[];
+  } catch (error) {
+    console.error('Error in getTraineesForTrainer:', error);
+    throw new Error('Failed to retrieve trainees for the specified trainer.');
   }
 }
