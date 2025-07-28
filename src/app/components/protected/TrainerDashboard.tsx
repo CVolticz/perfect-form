@@ -8,18 +8,26 @@
  */
 
 // System Level Import
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
+import Button from '@mui/material/Button';
 
 // Library Level Import
 import { Session } from 'next-auth';
 import { toast } from 'react-toastify';
 
 // Define the shape of video data
+interface Comment {
+  id: string;
+  content: string;
+  createdAt: Date;
+  authorName: string | null;
+}
+
 interface Video {
   id: number;
   title: string;
   videoUrl: string;
-  comments: string[];
+  comments: Comment[];
 }
 
 interface Trainee {
@@ -36,13 +44,16 @@ export default function TrainerDashboard({ session }: TrainerDashboardClientProp
   const [selectedTraineeId, setSelectedTraineeId] = useState<string | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(false);
+  const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
+  const [commentText, setCommentText] = useState('');
+
 
   useEffect(() => {
+    
     fetchTrainees();
   }, []);
 
   async function fetchTrainees() {
-
     try {
       if (!session?.user?.id) {
         toast.error('User ID not found');
@@ -60,25 +71,41 @@ export default function TrainerDashboard({ session }: TrainerDashboardClientProp
     }
   }
 
+  /**
+   * Async function to perform GET request to get data based on traineeID
+   */
   async function fetchVideos(traineeId: string) {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await fetch(`/api/videos/trainee?traineeId=${traineeId}`);
-      const videos: Video[] = await response.json();
-      setVideos(videos);
+        const params = new URLSearchParams({
+            userId: traineeId,
+        }).toString();            
+        const response = await fetch(`/api/videos?${params}`, {
+            method: 'GET',
+        }); 
+        const data: Video[] = await response.json(); // Type the response as Video[]
+
+        console.log('Fetched Videos:', data); // Debugging log
+        setVideos(data);
+        setActiveVideoId(data[0]?.id || null); // Set the first video as active by default
     } catch (error) {
-      console.error('Error fetching videos:', error);
-    } finally {
-      setLoading(false);
+        console.error('Error fetching videos:', error);
     }
+    setLoading(false);
   }
 
-  async function submitComment(videoId: number, content: string) {
+  async function submitComment(videoId: any, content: string) {
+    console.log('Submitting comment:', { videoId, content });
     try {
+      const formData = new FormData();
+      formData.append('userId', String(session.user.id ?? ''));
+      formData.append('role', String(session.user.role ?? ''));
+      formData.append('videoId', videoId);
+      formData.append('content', content);
+
       const response = await fetch('/api/comment', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoID: videoId, content }),
+        body: formData,
       });
       if (!response.ok) throw new Error('Failed to post comment');
       toast.success('Comment posted successfully');
@@ -88,13 +115,22 @@ export default function TrainerDashboard({ session }: TrainerDashboardClientProp
     }
   }
 
+  function handleVideoSelect(videoId: any) {
+    setActiveVideoId(videoId);
+  }
+
+  // Force Next to render the current active video (if any) 
+  const activeVideo = Array.isArray(videos)
+  ? videos.find((video) => video.id === activeVideoId)
+  : null;
+
   return (
     <div className="flex flex-col md:flex-row w-full h-[932px]">
       {/* Top panel or left column: Trainee dropdown */}
-      <div className="bg-gray-100 p-4 md:w-1/3 border-b md:border-b-0 md:border-r border-gray-300">
+      <div className="bg-gray-100 p-3 md:w-1/4 border-b md:border-b-0 md:border-r border-gray-300">
         <h2 className="text-xl font-bold mb-4">Select a Trainee</h2>
         <select
-          className="w-full p-2 border rounded bg-white"
+          className="w-full p-1.5 border rounded bg-white text-sm max-w-xs"
           value={selectedTraineeId ?? ''}
           onChange={(e) => {
             const traineeId = e.target.value;
@@ -121,42 +157,85 @@ export default function TrainerDashboard({ session }: TrainerDashboardClientProp
         ) : videos.length === 0 ? (
           <p className="text-white">No videos found for this trainee.</p>
         ) : (
-          <div className="space-y-6">
-            {videos.map((video) => (
-              <div key={video.id} className="bg-white rounded shadow p-4">
-                <video
-                  controls
-                  className="w-full max-h-[400px] object-contain mb-2"
-                  preload="auto"
-                >
-                  <source src={video.videoUrl} type="video/mp4" />
-                </video>
-                <div className="space-y-2">
-                  <h3 className="font-semibold">Comments</h3>
-                  <ul className="list-disc list-inside text-sm text-gray-700">
-                    {video.comments.map((comment, idx) => (
-                      <li key={idx}>{comment}</li>
-                    ))}
-                  </ul>
-                  <textarea
-                    rows={2}
-                    className="w-full p-2 border rounded mt-2"
-                    placeholder="Write your comment here..."
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        const content = e.currentTarget.value.trim();
-                        if (content) {
-                          submitComment(video.id, content);
-                          e.currentTarget.value = '';
-                        }
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+          <>
+            {/* Video selector dropdown */}
+            <div className="mb-4">
+              <label className="text-white block mb-2 font-medium">Select a video</label>
+              <select
+                className="w-full p-2 border rounded bg-white"
+                value={activeVideoId ?? ''}
+                onChange={(e) => handleVideoSelect(e.target.value)}
+              >
+                {videos.map((video) => (
+                  <option key={video.id} value={video.id}>
+                    {video.title || `Video ${video.id}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+
+            {/* Render selected video */}
+            {Array.isArray(videos) && videos.length > 0 ? (
+              activeVideo ? (
+                <>
+                  <div className="flex flex-col md:flex-row gap-4">
+                    {/* Video section */}
+                    <div className="bg-white rounded shadow p-4 flex justify-center items-center md:w-2/3">
+                      <video
+                        key={activeVideo.videoUrl}
+                        src={activeVideo.videoUrl}
+                        controls
+                        className="max-w-full max-h-[450px] object-contain"
+                      />
+                    </div>
+
+                    {/* Comments section */}
+                    <div className="bg-white rounded shadow p-4 md:w-1/3 flex flex-col">
+                      <h3 className="font-semibold mb-2">Comments</h3>
+                      <ul>
+                        {activeVideo.comments.map((comment, idx) => (
+                          <li key={comment.id}>
+                            <div className="text-sm text-gray-800">
+                              <strong>{comment.authorName}</strong>: {comment.content}
+                              <br />
+                              <span className="text-xs text-gray-500">{new Date(comment.createdAt).toLocaleString()}</span>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                      <textarea
+                        rows={4}
+                        className="w-full p-2 border rounded mt-2 resize-none"
+                        placeholder="Write your comment here..."
+                        value={commentText}
+                        onChange={(e) => setCommentText(e.target.value)}
+                      />
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        className="mt-2"
+                        disabled={!commentText.trim()}
+                        onClick={() => {
+                          if (!commentText.trim()) return;
+                          submitComment(activeVideo.id, commentText.trim());
+                          setCommentText('');
+                        }}
+                      >
+                        Submit
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className="text-white">Select a video to play</p>
+              )
+              ) : (
+                <p className="text-white">
+                  Please Select a Trainee to View Their Videos
+                </p>
+              )}
+          </>
         )}
       </div>
     </div>

@@ -7,15 +7,23 @@ import { BlobServiceClient } from '@azure/storage-blob';
 
 // Server Action Import - PRISMA Functions
 import { getTraineeVideoMetadataFromDb, saveTraineeVideoMetadataToDb } from '@/services/videoManagement';
+import { getCommentsByVideoId } from '@/services/commentManagement';
 
 // ------------------------------------------------------------------
 
 // Define the shape of the Video interface
+interface Comment {
+  id: string;
+  content: string;
+  createdAt: Date;
+  authorName: string | null;
+}
+
 interface Video {
   id: string;
   title: string;
   videoUrl: string;
-  comments?: string[];
+  comments?: Comment[];
 }
 
 // Azure Blob Storage Configuration
@@ -65,11 +73,22 @@ export async function GET(request: NextRequest) {
 
       if (dbVideo) { // Only include blobs that have corresponding metadata in the DB for this user
         const videoUrl = `https://${AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${AZURE_CONTAINER_NAME}/${blob.name}?${process.env.AZURE_SAS_TOKEN}`;
+        
+
+        const comments = await getCommentsByVideoId(dbVideo.id);
+
+
+
         videoBlobs.push({
-          id: dbVideo.id,                            // Blob name as ID
-          title: dbVideo.title,  // Get the actual video file name (e.g., video1.mp4)
-          videoUrl: videoUrl,                          // URL to the video
-          comments: [],                             // Initialize empty comments array
+          id: dbVideo.id,                           // Blob name as ID
+          title: dbVideo.title,                     // Get the actual video file name (e.g., video1.mp4)
+          videoUrl: videoUrl,                       // URL to the video
+          comments: comments.map((c) => ({
+            id: c.id,
+            content: c.content,
+            createdAt: c.createdAt,
+            authorName: c.authorName || null, // Optional author name
+          })),                             
         });
       }
     }
@@ -102,7 +121,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Convert the file stream to ArrayBuffer
-    const filename = `videos/${file.name}`;
+    const filename = `videos/${userId}/${file.name}`;
     const arrayBuffer = await streamToArrayBuffer(file.stream());
 
     // Upload the file to Azure Blob Storage

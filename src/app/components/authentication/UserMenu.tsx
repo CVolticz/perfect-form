@@ -7,14 +7,15 @@ import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/r
 
 import {
   ArrowRightIcon,
-  Cog8ToothIcon,
+  ArrowUpTrayIcon,
   ChartBarSquareIcon,
-  ClipboardDocumentCheckIcon
+  ClipboardDocumentCheckIcon,
+  Cog8ToothIcon
 } from '@heroicons/react/24/solid'
 
 
 
-const SignInButton = () => {
+function UserMenu() {
   const { data: session } = useSession()
 
   return (
@@ -86,6 +87,12 @@ const SignInButton = () => {
                   <span>Dashboard</span>
                 </div>
               </MenuItem>
+              <MenuItem as={Link} href='/protected/upload'>
+                <div className='group flex items-center gap-6 px-[34px] py-2 text-sm text-stone-400 dark:text-stone-500 active:bg-stone-700/50 dark:active:bg-stone-200'>
+                  <ArrowUpTrayIcon className='h-5 w-5 text-stone-400' />
+                  <span>Upload</span>
+                </div>
+              </MenuItem>
               {/* Trainer Dashboard — only show if role is trainer */}
               {session.user.role === 'TRAINER' && (
                 <MenuItem as={Link} href='/protected/trainer'>
@@ -124,4 +131,4 @@ const SignInButton = () => {
   )
 }
 
-export default SignInButton;
+export default UserMenu;

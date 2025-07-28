@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import SignInButton from '@/app/components/authentication/SignInButton';
+import UserMenu from '@/app/components/authentication/UserMenu';
 
 
 function Header() {
@@ -25,7 +25,7 @@ function Header() {
           </nav>
         </div>
         <div className="flex items-center">
-          <SignInButton />
+          <UserMenu />
         </div>
       </div>
     </header>

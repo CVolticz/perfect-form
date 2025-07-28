@@ -1,21 +1,27 @@
 'use client';
+/**
+ * Video Upload Component to allow users to upload videos
+ * and save metadata to the database.
+ */
 import { useState, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { toast } from 'react-toastify';
 
 const VideoUpload = () => {
   const { data: session } = useSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   const handleUpload = async () => {
+    setMessage(null);
+
     if (!session?.user?.id) {
-      toast.error('User ID not found');
+      setMessage({ text: 'User ID not found', type: 'error' });
       return;
     }
 
     if (!fileInputRef.current?.files?.[0]) {
-      toast.error('No file selected');
+      setMessage({ text: 'No file selected', type: 'error' });
       return;
     }
 
@@ -32,31 +38,49 @@ const VideoUpload = () => {
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to upload video');
-      }
-
       const data = await response.json();
-      if (data.error) {
-        throw new Error(data.error);
+      if (!response.ok || data?.error) {
+        throw new Error(data?.error || 'Failed to upload video');
       }
 
-      toast.success('Video uploaded successfully');
+      setMessage({ text: 'Video uploaded successfully!', type: 'success' });
     } catch (error: any) {
-      toast.error(error.message || 'An error occurred');
+      setMessage({ text: error.message || 'An error occurred', type: 'error' });
     } finally {
       setUploading(false);
     }
   };
 
   return (
-    <div>
-      <h1>Upload Video</h1>
-      <input type="file" ref={fileInputRef} />
-      <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded"
-        onClick={handleUpload} disabled={uploading}>
-        {uploading ? 'Uploading...' : 'Upload Video'}
-      </button>
+    <div className="flex items-center justify-center h-64 bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white p-6 rounded shadow-md text-center">
+        <h1 className="text-2xl font-bold mb-4">Upload Video</h1>
+
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="w-full border border-gray-300 p-2 rounded mb-4"
+        />
+
+        <button
+          type="button"
+          onClick={handleUpload}
+          disabled={uploading}
+          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+        >
+          {uploading ? 'Uploading...' : 'Upload Video'}
+        </button>
+
+        {message && (
+          <p
+            className={`mt-4 font-medium ${
+              message.type === 'success' ? 'text-green-600' : 'text-red-600'
+            }`}
+          >
+            {message.text}
+          </p>
+        )}
+      </div>
     </div>
   );
 };

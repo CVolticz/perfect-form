@@ -26,12 +26,13 @@ export default async function Upload() {
   }
 
   return (
-    <section className="py-24">
-      <div className="container">
-        <h1> Hello {session.user.name}</h1>
-        <h1 className="text-2xl font-bold mb-4">Upload Your Avatar</h1>
+    <section className="flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md text-center bg-white p-6 rounded shadow-md">
+        <h1 className="text-xl font-semibold mb-2">Hello {session.user.name}</h1>
+        <h2 className="text-2xl font-bold mb-4">Upload Your Avatar</h2>
         <VideoUpload />
       </div>
     </section>
   );
+
 }

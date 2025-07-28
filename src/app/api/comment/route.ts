@@ -1,38 +1,48 @@
+'use server';
 /**
- * API to handle comments posting and fetching
+ * Server Comment API for handling comments on videos
  */
 // Library Level Import
-import { getServerSession } from 'next-auth';
-import { sql } from '@vercel/postgres';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Server Action Import
-// import { saveVideoMetadataToDb } from '@/lib/postgres/saveTraineeVideoMetadata'; // Your function to save video metadata
-// import { getTrainerVideoMetadataFromDb } from '@/lib/postgres/getTrainerVideoMetadata'; // Your function to save video metadata
-
-// API Level Import
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+// Service Level Import
+import { createComment, getCommentsByVideoId } from '@/services/commentManagement';
 
 
-export async function POST(req: NextRequest) {
-  // Handling user's authentication
-  const session = await getServerSession(authOptions)
-  if (!session || (session.user.role !== 'trainer')) {
-    return NextResponse.json({ error: 'Unautorized' }, { status: 401 });
-  } else if (!session.user.id) {
-    return NextResponse.json({ error: 'Trainer ID is missing' }, { status: 400 });
+export async function POST(request: NextRequest): Promise<NextResponse> {
+
+  // Parse form data and get the file and userId from the request
+  const formData = await request.formData();
+  const userId = formData.get('userId') as string | '';
+  const role = formData.get('role') as string | '';
+  const videoId = formData.get('videoId') as string | '';
+  const content = formData.get('content') as string | '';
+
+  console.log('Received form data:', {  userId, role, videoId, content });
+
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized! Missing userId' }, { status: 400 });
   }
 
-  // save comments to postgres if exists
-  const { videoID, content } = await req.json();
-  if  (!videoID || !content ){
-    return NextResponse.json({ error: 'Missing Video ID or Comment'}, { status: 400 });
+  // Only trainer & admin role is allowed to post comments
+  if (role === 'USER') {
+    return NextResponse.json({ error: 'Unauthorized! Only Trainer can post comments' }, {
+      status: 403,
+  })};
+
+  if (!videoId) {
+    return NextResponse.json({ error: 'Missing Video ID' }, { status: 400 });
   }
 
-  await sql `
-    INSERT INTO comments (video_id, author_id, content)
-    VALUES (${videoID}, ${session.user.id}, ${content})
-  `;
-
-  return NextResponse.json({success: true});
+  try {
+    await createComment(
+      videoId,
+      userId,
+      content
+    );
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Error saving comment:', error);
+    return NextResponse.json({ error: 'Failed to save comment' }, { status: 500 });
+  }
 }
