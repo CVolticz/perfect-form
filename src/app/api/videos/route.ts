@@ -3,6 +3,7 @@
  */
 // Library Level Import
 import { NextRequest, NextResponse } from 'next/server';
+import { ClientSecretCredential } from '@azure/identity';
 import { BlobServiceClient } from '@azure/storage-blob';
 
 // Server Action Import - PRISMA Functions
@@ -27,18 +28,22 @@ interface Video {
 }
 
 // Azure Blob Storage Configuration
-const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
 const AZURE_CONTAINER_NAME = process.env.AZURE_CONTAINER_NAME;
 const AZURE_STORAGE_ACCOUNT_NAME = process.env.AZURE_STORAGE_ACCOUNT_NAME;
 
-if (!AZURE_STORAGE_CONNECTION_STRING || !AZURE_CONTAINER_NAME) {
+if (!AZURE_CONTAINER_NAME) {
   throw new Error('Azure Storage connection string or container name is not set in environment variables.');
 }
 
-// Initialize the BlobServiceClient using your connection string
-const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
+const credential = new ClientSecretCredential(
+  process.env.AZURE_TENANT_ID!,
+  process.env.AZURE_CLIENT_ID!,
+  process.env.AZURE_CLIENT_SECRET!
+);
 
-// Get a reference to the container where your videos are stored
+
+// Authenticate to the blob and the container where your videos are stored
+const blobServiceClient = new BlobServiceClient(`https://${AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net`, credential);
 const containerClient = blobServiceClient.getContainerClient(AZURE_CONTAINER_NAME);
 
 /**
@@ -63,21 +68,18 @@ export async function GET(request: NextRequest) {
     // Create a map for quick lookup by videoPath (blob.name)
     const dbVideoMap = new Map<string, typeof dbVideos[0]>();
     dbVideos.forEach((video: typeof dbVideos[0]) => dbVideoMap.set(video.videoPath, video));
-    // ------------------------------------------
 
-    const prefix = 'videos/'; // Define the prefix for the "videos" subfolder
+    // Access Azure Blob Storage to get the list of video blobs
+    const prefix = `videos/${userId}/`; 
     const videoBlobs: Video[] = [];
 
     for await (const blob of containerClient.listBlobsFlat({ prefix })) {
       const dbVideo = dbVideoMap.get(blob.name);
-
+      console.log(`Processing blob: ${blob.name}, DB Video: ${dbVideo ? dbVideo.title : 'Not found'}`);
       if (dbVideo) { // Only include blobs that have corresponding metadata in the DB for this user
-        const videoUrl = `https://${AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${AZURE_CONTAINER_NAME}/${blob.name}?${process.env.AZURE_SAS_TOKEN}`;
-        
-
+        // const videoUrl = `https://${AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${AZURE_CONTAINER_NAME}/${blob.name}`;
+        const videoUrl = `/api/videos/stream?path=${blob.name}`;
         const comments = await getCommentsByVideoId(dbVideo.id);
-
-
 
         videoBlobs.push({
           id: dbVideo.id,                           // Blob name as ID

@@ -33,7 +33,7 @@ const VideoUpload = () => {
     setUploading(true);
 
     try {
-      const response = await fetch('/api/videos/trainee', {
+      const response = await fetch('/api/videos', {
         method: 'POST',
         body: formData,
       });

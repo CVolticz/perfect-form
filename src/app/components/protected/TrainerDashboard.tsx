@@ -183,7 +183,7 @@ export default function TrainerDashboard({ session }: TrainerDashboardClientProp
                     {/* Video section */}
                     <div className="bg-white rounded shadow p-4 flex justify-center items-center md:w-2/3">
                       <video
-                        key={activeVideo.videoUrl}
+                        key={activeVideo.id}
                         src={activeVideo.videoUrl}
                         controls
                         className="max-w-full max-h-[450px] object-contain"
