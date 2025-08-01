@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.9.1",
-    "@azure/storage-blob": "^12.26.0",
+    "@azure/identity": "^4.10.2",
+    "@azure/storage-blob": "^12.28.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@fortawesome/react-fontawesome": "^0.2.2",
