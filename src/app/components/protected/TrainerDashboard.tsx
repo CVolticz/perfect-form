@@ -108,8 +108,22 @@ export default function TrainerDashboard({ session }: TrainerDashboardClientProp
         body: formData,
       });
       if (!response.ok) throw new Error('Failed to post comment');
+
+      const newComment = await response.json();
+
       toast.success('Comment posted successfully');
-      if (selectedTraineeId) fetchVideos(selectedTraineeId);
+
+      // Update the active video's comments
+      setVideos((prevVideos) =>
+        prevVideos.map((video) =>
+          video.id === videoId
+            ? {
+                ...video,
+                comments: [...video.comments, newComment],
+              }
+            : video
+        )
+      );
     } catch (error) {
       toast.error('Failed to post comment');
     }

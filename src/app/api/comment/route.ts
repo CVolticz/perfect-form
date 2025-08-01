@@ -35,12 +35,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    await createComment(
+    const newComment = await createComment(
       videoId,
       userId,
       content
     );
-    return NextResponse.json({ success: true });
+    return NextResponse.json(newComment);
   } catch (error: any) {
     console.error('Error saving comment:', error);
     return NextResponse.json({ error: 'Failed to save comment' }, { status: 500 });
